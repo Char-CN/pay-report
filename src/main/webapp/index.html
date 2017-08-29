@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<title>恒大支付报表系统</title>
+<meta name="renderer" content="webkit">
+<meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+<meta name="apple-mobile-web-app-status-bar-style" content="black">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="format-detection" content="telephone=no">
+<link rel="stylesheet" href="/layui/css/layui.css" media="all">
+<script type="text/javascript" charset="utf-8" src="/js/jquery-3.2.1.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="/js/xdate.js"></script>
+</head>
+<body>
+	<div class="layui-layout layui-layout-admin">
+		<div class="layui-header">
+			<div class="layui-logo" style="font-size: 24px;">恒大支付报表系统</div>
+			<!-- 头部区域（可配合layui已有的水平导航） -->
+			<ul class="layui-nav layui-layout-right">
+				<li class="layui-nav-item"><a href="javascript:;">我</a>
+					<dl class="layui-nav-child">
+						<dd>
+							<a href="javascript:;">改密</a>
+						</dd>
+						<dd>
+							<a href="javascript:;">退了</a>
+						</dd>
+					</dl></li>
+			</ul>
+		</div>
+		<div class="layui-side layui-bg-black">
+			<div class="layui-side-scroll">
+				<!-- 左侧导航区域（可配合layui已有的垂直导航） -->
+				<ul class="layui-nav layui-nav-tree" lay-filter="test">
+					<li class="layui-nav-item"><a href="javascript:void(0);" id="pos_data">POS刷卡数据报表</a></li>
+				</ul>
+			</div>
+		</div>
+		<div class="layui-body" style="padding: 15px; background-color: #f9fcff;">欢迎来到王者农药！</div>
+		<div class="layui-footer">
+			<!-- 底部固定区域 -->
+			@ 恒大互联网金融集团 版权所有
+		</div>
+	</div>
+	<script type="text/javascript" charset="utf-8" src="/layui/layui.js" charset="utf-8"></script>
+	<script type="text/javascript" charset="utf-8" src="/layui/layui.all.js" charset="utf-8"></script>
+	<script>
+		$(function() {
+			$("#pos_data").click(function() {
+				$(".layui-body").load("view/pos_data.html");
+			});
+			$("#pos_data").click();
+		});
+	</script>
+</body>
+</html>

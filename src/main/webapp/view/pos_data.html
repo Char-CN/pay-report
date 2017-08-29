@@ -1,0 +1,163 @@
+<div>
+	<form class="layui-form">
+		<div class="layui-form-item">
+			&nbsp;
+			<div class="layui-inline">
+				<input type="radio" name="date_type" lay-filter="date_type" value="日期范围" title="日期范围" checked>
+				<input type="radio" name="date_type" lay-filter="date_type" value="历史累计" title="历史累计" >
+			</div>
+			<div class="layui-inline" id="date_div">
+			</div>
+			<div class="layui-inline">
+				<select id="type">
+					<option value="全部" selected>全部</option>
+					<option value="借记卡">借记卡</option>
+					<option value="贷记卡">贷记卡</option>
+				</select>
+			</div>
+			<div class="layui-inline">
+				<button class="layui-btn" lay-submit lay-filter="*">查询</button>
+			</div>
+			<div class="layui-inline">
+				<button class="layui-btn" >说明</button>
+			</div>
+		</div>
+	</form>
+	<table id="table" class="layui-table">
+	</table>
+</div>
+
+<script>
+	$(function() {
+		var today = new XDate().toString("yyyy-MM-dd");
+		var btn_type = "by_range";
+		/* 初始化方法 */
+		var init = function() {
+			/* 加载表单 */
+			var form = layui.form;
+			form.render();
+			form.on('submit(*)', function(data) {
+				search();
+				return false;
+			});
+			form.on('radio(date_type)', function(data){
+				if (data.value == "日期范围") {
+					btn_type = "by_range";
+				} else {
+					btn_type = "by_total";
+				}
+				refer_date_div();
+			});
+			/* 加载表格 */
+			var table = layui.table;
+			//执行渲染
+			table.render({
+				elem : '#table' //指定原始表格元素选择器（推荐id选择器）
+			});
+			/* 选择日期控件 */
+			refer_date_div();
+			/* 查询默认数据 */
+			search();
+		};
+		var refer_date_div = function() {
+			var laydate = layui.laydate;
+			$("#date_div").empty();
+			$("#date_div").append('<input type="text" class="layui-input" style="width:180px;" id="date">');
+			if (btn_type == "by_range") {
+				laydate.render({
+					elem: '#date',
+					max : 0,
+					range: true
+				});
+				$("#date").val(today + " - " + today);
+				btn_type = "by_range";
+			} else {
+				laydate.render({
+					elem : '#date',
+					max : 0,
+					istime : true,
+					format : 'yyyy-MM-dd',
+					value : today,
+					btns : [ 'now' ]
+				});
+				$("#date").val(today);
+				btn_type = "by_total";
+			}
+		};
+		var search = function() {
+			var day = $("#date").val();
+			if (day == "") {
+				layer.open({
+					title : '提示',
+					content : '请选择日期！'
+				});
+				return false;
+			}
+			var days = day.split(" - ");
+			var url = "";
+			if (btn_type == "by_range") {
+				url = 'http://ds.idc.xiwanglife.com/dataservice/getconfig.do?id=205&begin_date=' + days[0].replace(/-/gi, "") + '&end_date=' + days[1].replace(/-/gi, "");
+			} else {
+				url = 'http://ds.idc.xiwanglife.com/dataservice/getconfig.do?id=205&begin_date=' + days[0].replace(/-/gi, "");
+			}
+			$.ajax({
+				type : 'post',
+				url : url,
+				crossDomain : true,
+				jsonpCallback : "sucCallback",
+				success : function(data) {
+					$("#table").empty();
+					var values = null;
+					var type_name = "";
+					if (btn_type == "by_range") {
+						values = data.details.range.values;
+						type_name = "日期范围";
+					} else {
+						values = data.details.total.values;
+						type_name = "历史累计";
+					}
+					if (values.length == 0) {
+						layer.open({
+							title : '提示',
+							content : '没有任何数据！'
+						});
+					}
+					var type = $("#type").val();
+					var value = values[0];
+
+					$("#table").append("<tr style='background-color:#ddeaff'><td width='50%'>数据类型</td><td width='50%'>" + type_name + "</td></tr>");
+					$("#table").append("<tr style='background-color:#ddeaff'><td>时间</td><td>" + day + "</td></tr>");
+
+					$("#table").append("<tr style='background-color:#fff3dd'><td>总交易笔数</td><td>" + (value == undefined ? "" : value.cnt_tot) + "</td></tr>");
+					$("#table").append("<tr style='background-color:#fff3dd'><td>总交易金额</td><td>" + (value == undefined ? "" : value.amt_tot) + "</td></tr>");
+					$("#table").append("<tr style='background-color:#fff3dd'><td>总交易手续费</td><td>" + (value == undefined ? "" : value.fee_tot) + "</td></tr>");
+					$("#table").append("<tr style='background-color:#fff3dd'><td>总交易金额</td><td>" + (value == undefined ? "" : value.profit_tot) + "</td></tr>");
+					$("#table").append("<tr style='background-color:#fff3dd'><td>恒大总分润金额</td><td>" + (value == undefined ? "" : value.profit_hengda) + "</td></tr>");
+					$("#table").append("<tr style='background-color:#fff3dd'><td>总分润金额</td><td>" + (value == undefined ? "" : value.profit_shande) + "</td></tr>");
+
+					if (type == "全部" || type == "借记卡") {
+						$("#table").append("<tr style='background-color:#f1ffdd'><td>借记卡交易笔数</td><td>" + (value == undefined ? "" : value.cnt_cc) + "</td></tr>");
+						$("#table").append("<tr style='background-color:#f1ffdd'><td>借记卡交易金额</td><td>" + (value == undefined ? "" : value.amt_cc) + "</td></tr>");
+						$("#table").append("<tr style='background-color:#f1ffdd'><td>借记卡交易手续费</td><td>" + (value == undefined ? "" : value.fee_cc) + "</td></tr>");
+						$("#table").append("<tr style='background-color:#f1ffdd'><td>借记卡总分润金额</td><td>" + (value == undefined ? "" : value.profit_cc) + "</td></tr>");
+						$("#table").append("<tr style='background-color:#f1ffdd'><td>借记卡恒大分润金额</td><td>" + (value == undefined ? "" : value.profit_hengda_cc) + "</td></tr>");
+						$("#table").append("<tr style='background-color:#f1ffdd'><td>借记卡彬德分润金额</td><td>" + (value == undefined ? "" : value.profit_shande_cc) + "</td></tr>");
+					}
+
+					if (type == "全部" || type == "贷记卡") {
+						$("#table").append("<tr style='background-color:#edfcff'><td>贷记卡交易笔数</td><td>" + (value == undefined ? "" : value.cnt_dc) + "</td></tr>");
+						$("#table").append("<tr style='background-color:#edfcff'><td>贷记卡交易金额</td><td>" + (value == undefined ? "" : value.amt_dc) + "</td></tr>");
+						$("#table").append("<tr style='background-color:#edfcff'><td>贷记卡交易手续费</td><td>" + (value == undefined ? "" : value.fee_dc) + "</td></tr>");
+						$("#table").append("<tr style='background-color:#edfcff'><td>贷记卡总分润金额</td><td>" + (value == undefined ? "" : value.profit_dc) + "</td></tr>");
+						$("#table").append("<tr style='background-color:#edfcff'><td>贷记卡恒大分润金额</td><td>" + (value == undefined ? "" : value.profit_hengda_dc) + "</td></tr>");
+						$("#table").append("<tr style='background-color:#edfcff'><td>贷记卡彬德分润金额</td><td>" + (value == undefined ? "" : value.profit_shande_dc) + "</td></tr>");
+					}
+				},
+				error : function(data) {
+					alert(JSON.stringify(data));
+				}
+			});
+		};
+		init();
+	});
+</script>
