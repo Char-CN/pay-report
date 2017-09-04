@@ -18,9 +18,9 @@
 			<div class="layui-inline">
 				<button class="layui-btn" lay-submit lay-filter="search">查询</button>
 			</div>
-			<div class="layui-inline">
-				<button class="layui-btn" lay-submit lay-filter="export">导出</button>
-			</div>
+<!-- 			<div class="layui-inline"> -->
+<!-- 				<button class="layui-btn" lay-submit lay-filter="export">导出</button> -->
+<!-- 			</div> -->
 		</div>
 	</form>
 	<table id="table" class="layui-table">
@@ -41,8 +41,6 @@
 				return false;
 			});
 			form.on('submit(export)', function(data) {
-				alert(tableExport);
-				tableExport('table', 'xls', "xls");
 				return false;
 			});
 			form.on('radio(date_type)', function(data){
