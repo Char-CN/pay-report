@@ -16,10 +16,10 @@
 				</select>
 			</div>
 			<div class="layui-inline">
-				<button class="layui-btn" lay-submit lay-filter="*">查询</button>
+				<button class="layui-btn" lay-submit lay-filter="search">查询</button>
 			</div>
 			<div class="layui-inline">
-				<button class="layui-btn" >说明</button>
+				<button class="layui-btn" lay-submit lay-filter="export">导出</button>
 			</div>
 		</div>
 	</form>
@@ -29,15 +29,20 @@
 
 <script>
 	$(function() {
-		var today = new XDate().toString("yyyy-MM-dd");
+		var today = new XDate().addDays(-1).toString("yyyy-MM-dd");
 		var btn_type = "by_range";
 		/* 初始化方法 */
 		var init = function() {
 			/* 加载表单 */
 			var form = layui.form;
 			form.render();
-			form.on('submit(*)', function(data) {
+			form.on('submit(search)', function(data) {
 				search();
+				return false;
+			});
+			form.on('submit(export)', function(data) {
+				alert(tableExport);
+				tableExport('table', 'xls', "xls");
 				return false;
 			});
 			form.on('radio(date_type)', function(data){
@@ -66,7 +71,7 @@
 			if (btn_type == "by_range") {
 				laydate.render({
 					elem: '#date',
-					max : 0,
+					max : -1,
 					range: true
 				});
 				$("#date").val(today + " - " + today);
@@ -74,7 +79,7 @@
 			} else {
 				laydate.render({
 					elem : '#date',
-					max : 0,
+					max : -1,
 					istime : true,
 					format : 'yyyy-MM-dd',
 					value : today,
@@ -100,6 +105,9 @@
 			} else {
 				url = 'http://ds.idc.xiwanglife.com/dataservice/getconfig.do?id=205&begin_date=' + days[0].replace(/-/gi, "");
 			}
+			var shade_index = layer.load(1, {
+				shade: [0.3,'#fff'] //0.1透明度的白色背景
+			});
 			$.ajax({
 				type : 'post',
 				url : url,
@@ -131,9 +139,9 @@
 					$("#table").append("<tr style='background-color:#fff3dd'><td>总交易笔数</td><td>" + (value == undefined ? "" : value.cnt_tot) + "</td></tr>");
 					$("#table").append("<tr style='background-color:#fff3dd'><td>总交易金额</td><td>" + (value == undefined ? "" : value.amt_tot) + "</td></tr>");
 					$("#table").append("<tr style='background-color:#fff3dd'><td>总交易手续费</td><td>" + (value == undefined ? "" : value.fee_tot) + "</td></tr>");
-					$("#table").append("<tr style='background-color:#fff3dd'><td>总交易金额</td><td>" + (value == undefined ? "" : value.profit_tot) + "</td></tr>");
+					$("#table").append("<tr style='background-color:#fff3dd'><td>总分润金额</td><td>" + (value == undefined ? "" : value.profit_tot) + "</td></tr>");
 					$("#table").append("<tr style='background-color:#fff3dd'><td>恒大总分润金额</td><td>" + (value == undefined ? "" : value.profit_hengda) + "</td></tr>");
-					$("#table").append("<tr style='background-color:#fff3dd'><td>总分润金额</td><td>" + (value == undefined ? "" : value.profit_shande) + "</td></tr>");
+					$("#table").append("<tr style='background-color:#fff3dd'><td>杉德总分润金额</td><td>" + (value == undefined ? "" : value.profit_shande) + "</td></tr>");
 
 					if (type == "全部" || type == "借记卡") {
 						$("#table").append("<tr style='background-color:#f1ffdd'><td>借记卡交易笔数</td><td>" + (value == undefined ? "" : value.cnt_cc) + "</td></tr>");
@@ -152,6 +160,7 @@
 						$("#table").append("<tr style='background-color:#edfcff'><td>贷记卡恒大分润金额</td><td>" + (value == undefined ? "" : value.profit_hengda_dc) + "</td></tr>");
 						$("#table").append("<tr style='background-color:#edfcff'><td>贷记卡彬德分润金额</td><td>" + (value == undefined ? "" : value.profit_shande_dc) + "</td></tr>");
 					}
+					layer.closeAll('loading');
 				},
 				error : function(data) {
 					alert(JSON.stringify(data));

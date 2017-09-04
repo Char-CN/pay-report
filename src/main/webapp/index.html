@@ -10,9 +10,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="format-detection" content="telephone=no">
-<link rel="stylesheet" href="/layui/css/layui.css" media="all">
-<script type="text/javascript" charset="utf-8" src="/js/jquery-3.2.1.min.js"></script>
-<script type="text/javascript" charset="utf-8" src="/js/xdate.js"></script>
+<link rel="stylesheet" href="layui/css/layui.css" media="all">
+<script type="text/javascript" charset="utf-8" src="js/jquery-3.2.1.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/xdate.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/include.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/tableExport.js"></script>
 </head>
 <body>
 	<div class="layui-layout layui-layout-admin">
@@ -20,7 +22,7 @@
 			<div class="layui-logo" style="font-size: 24px;">恒大支付报表系统</div>
 			<!-- 头部区域（可配合layui已有的水平导航） -->
 			<ul class="layui-nav layui-layout-right">
-				<li class="layui-nav-item"><a href="javascript:;">我</a>
+				<li class="layui-nav-item" style=""><a href="javascript:;"></a>
 					<dl class="layui-nav-child">
 						<dd>
 							<a href="javascript:;">改密</a>
@@ -35,20 +37,33 @@
 			<div class="layui-side-scroll">
 				<!-- 左侧导航区域（可配合layui已有的垂直导航） -->
 				<ul class="layui-nav layui-nav-tree" lay-filter="test">
-					<li class="layui-nav-item"><a href="javascript:void(0);" id="pos_data">POS刷卡数据报表</a></li>
+					<li class="layui-nav-item layui-this"><a href="javascript:void(0);" id="pos_data">彬德POS刷卡数据报表</a></li>
 				</ul>
 			</div>
 		</div>
-		<div class="layui-body" style="padding: 15px; background-color: #f9fcff;">欢迎来到王者农药！</div>
+		<div class="layui-body" style="padding: 15px; background-color: #f9fcff;">欢迎来到 恒大支付报表系统！</div>
 		<div class="layui-footer">
 			<!-- 底部固定区域 -->
 			@ 恒大互联网金融集团 版权所有
 		</div>
 	</div>
-	<script type="text/javascript" charset="utf-8" src="/layui/layui.js" charset="utf-8"></script>
-	<script type="text/javascript" charset="utf-8" src="/layui/layui.all.js" charset="utf-8"></script>
+	<script type="text/javascript" charset="utf-8" src="layui/layui.js" charset="utf-8"></script>
+	<script type="text/javascript" charset="utf-8" src="layui/layui.all.js" charset="utf-8"></script>
 	<script>
+		var $userservice = new $userservice("pay-report");
 		$(function() {
+			/* 用户按钮 */
+			$(".layui-layout-admin>.layui-header>.layui-nav>.layui-nav-item>a").text($userservice.userNameCn);
+			$(".layui-layout-admin>.layui-header>.layui-nav>.layui-nav-item>a").append("<span class='layui-nav-more'></span>");
+			// 改密
+			$(".layui-layout-admin>.layui-header>.layui-nav>.layui-nav-item>.layui-nav-child>dd>a").eq(0).click(function() {
+				window.open($userservice.pwdHtml);
+			});
+			// 退了
+			$(".layui-layout-admin>.layui-header>.layui-nav>.layui-nav-item>.layui-nav-child>dd>a").eq(1).click(function() {
+				$userservice.logout();
+			});
+			/* 绑定链接 */
 			$("#pos_data").click(function() {
 				$(".layui-body").load("view/pos_data.html");
 			});
