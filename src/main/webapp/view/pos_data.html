@@ -3,8 +3,8 @@
 		<div class="layui-form-item">
 			&nbsp;
 			<div class="layui-inline">
-				<input type="radio" name="date_type" lay-filter="date_type" value="日期范围" title="日期范围" checked>
 				<input type="radio" name="date_type" lay-filter="date_type" value="历史累计" title="历史累计" >
+				<input type="radio" name="date_type" lay-filter="date_type" value="日期范围" title="日期范围" checked>
 			</div>
 			<div class="layui-inline" id="date_div">
 			</div>
@@ -78,6 +78,7 @@
 				laydate.render({
 					elem : '#date',
 					max : -1,
+					min : '2017-06-12',
 					istime : true,
 					format : 'yyyy-MM-dd',
 					value : today,
@@ -132,7 +133,7 @@
 					var value = values[0];
 
 					$("#table").append("<tr style='background-color:#ddeaff'><td width='50%'>数据类型</td><td width='50%'>" + type_name + "</td></tr>");
-					$("#table").append("<tr style='background-color:#ddeaff'><td>时间</td><td>" + day + "</td></tr>");
+					$("#table").append("<tr style='background-color:#ddeaff'><td>结算时间</td><td>" + day + "</td></tr>");
 
 					$("#table").append("<tr style='background-color:#fff3dd'><td>总交易笔数</td><td>" + (value == undefined ? "" : value.cnt_tot) + "</td></tr>");
 					$("#table").append("<tr style='background-color:#fff3dd'><td>总交易金额</td><td>" + (value == undefined ? "" : value.amt_tot) + "</td></tr>");
