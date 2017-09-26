@@ -23,12 +23,15 @@
 			</div>
 		</div>
 	</form>
+	<div id="charts"></div>
 	<table id="table" class="layui-table">
 	</table>
 </div>
 
 <script>
 	$(function() {
+		$("#charts").width($("#center").width() - 10);
+		$("#charts").height($("#center").height() / 2 - 10);
 		var today = new XDate().addDays(-1).toString("yyyy-MM-dd");
 		var btn_type = "by_range";
 		/* 初始化方法 */
@@ -108,6 +111,95 @@
 				crossDomain : true,
 				jsonpCallback : "sucCallback",
 				success : function(data) {
+
+					var myChart = echarts.init(document.getElementById('charts'));
+					var rstMap = {};
+					var rstKeys = [];
+					$.get("http://ds.idc.xiwanglife.com/dataservice/getconfig.do?id=223&para1=&para2=&para3=&para4=2017-08-01&para5=2017-08-05&para6=",
+						function(data) {
+// 							alert(JSON.stringify(data));
+							var details = data.details.day.values;
+							rstMap = $DSUtil.ConvertDetailsToMap(details);
+							rstKeys = $DSUtil.GetDetailsKeys(details);
+// 							var keys = [];
+// 							// 长度大于0
+// 							if (details.length > 0) {
+// 								// 获得所有 结果表头
+// 								keys = Object.keys(details[0]);
+// 								// 初始化结果map
+// 								for (var i in keys) {
+// 									rstMap[keys[i]] = [];
+// 								}
+// 								// 循环读取数据,结果数据格式为:rstMap['key1'] = ['val1', 'val2', 'val3']
+// 								for (var i in details) {
+// 									for (var j in keys) {
+// 										rstMap[keys[j]].push(details[i][keys[j]]);
+// 									}
+// 								}
+// 							}
+							option = {
+								tooltip : {
+									trigger : 'axis',
+									axisPointer : {
+										type : 'cross',
+										crossStyle : {
+											color : '#999'
+										}
+									}
+								},
+								toolbox : {
+									feature : {
+										dataView : {
+											show : true,
+											readOnly : false
+										},
+										magicType : {
+											show : true,
+											type : [ 'line', 'bar' ]
+										},
+										restore : {
+											show : true
+										},
+										saveAsImage : {
+											show : true
+										}
+									}
+								},
+								legend : {
+									data : [ 'cnt_tot', 'amt_tot', 'fee_tot' ]
+								},
+								xAxis : [ {
+									type : 'category',
+									data : rstMap['time_key'],
+									axisPointer : {
+										type : 'shadow'
+									}
+								} ],
+								yAxis : [ {
+									type : 'value',
+									name : '金额',
+									axisLabel : {
+										formatter : '{value} ml'
+									}
+								} ],
+								series : [ {
+									name : 'cnt_tot',
+									type : 'bar',
+									data : rstMap['cnt_tot']
+								}, {
+									name : 'amt_tot',
+									type : 'bar',
+									data : rstMap['amt_tot']
+								}, {
+									name : 'fee_tot',
+									type : 'bar',
+									data : rstMap['fee_tot']
+								} ]
+							};
+
+							// 使用刚指定的配置项和数据显示图表。
+							myChart.setOption(option);
+						});
 					$("#table").empty();
 					var values = null;
 					var type_name = "";

@@ -14,6 +14,9 @@
 <script type="text/javascript" charset="utf-8" src="js/jquery-3.2.1.min.js"></script>
 <script type="text/javascript" charset="utf-8" src="js/xdate.js"></script>
 <script type="text/javascript" charset="utf-8" src="js/include.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/table-to-excel.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/echarts.common.min.js"></script>
+<script type="text/javascript" charset="utf-8" src="js/commons.js"></script>
 </head>
 <body>
 	<div class="layui-layout layui-layout-admin">
@@ -36,14 +39,15 @@
 			<div class="layui-side-scroll">
 				<!-- 左侧导航区域（可配合layui已有的垂直导航） -->
 				<ul class="layui-nav layui-nav-tree" lay-filter="test">
-					<li class="layui-nav-item layui-this"><a href="javascript:void(0);" id="pos_data">彬德POS刷卡数据报表</a></li>
+					<li class="layui-nav-item"><a href="javascript:void(0);" id="pos_data">彬德POS刷卡报表</a></li>
+					<li class="layui-nav-item"><a href="javascript:void(0);" id="pos_data_v2">彬德POS刷卡报表-v2</a></li>
 				</ul>
 			</div>
 		</div>
-		<div class="layui-body" style="padding: 15px; background-color: #f9fcff;">欢迎来到 恒大支付报表系统！</div>
+		<div id="center" class="layui-body" style="padding: 15px; background-color: #f9fcff;">欢迎来到 恒大支付报表系统！</div>
 		<div class="layui-footer">
 			<!-- 底部固定区域 -->
-			@ 恒大互联网金融集团 版权所有
+			@ 恒大互联网金融集团（大数据及征信中心）版权所有
 		</div>
 	</div>
 	<script type="text/javascript" charset="utf-8" src="layui/layui.js" charset="utf-8"></script>
@@ -64,9 +68,13 @@
 			});
 			/* 绑定链接 */
 			$("#pos_data").click(function() {
-				$(".layui-body").load("view/pos_data.html");
+				$("#center").load("view/pos_data.html");
 			});
-			$("#pos_data").click();
+			$("#pos_data_v2").click(function() {
+				$("#center").load("view/pos_data_v2.html");
+			});
+			$("#pos_data_v2").click();
+			$("#pos_data_v2").addClass("layui-this");
 		});
 	</script>
 </body>
