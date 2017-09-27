@@ -2,9 +2,10 @@
 	<form class="layui-form">
 		<div class="layui-form-item">
 			&nbsp;
+			<div class="layui-inline" id="select_div">
+			</div>
 			<div class="layui-inline">
-				<input type="radio" name="date_type" lay-filter="date_type" value="历史累计" title="历史累计" >
-				<input type="radio" name="date_type" lay-filter="date_type" value="日期范围" title="日期范围" checked>
+				日期范围
 			</div>
 			<div class="layui-inline" id="date_div">
 			</div>
@@ -18,9 +19,9 @@
 			<div class="layui-inline">
 				<button class="layui-btn" lay-submit lay-filter="search">查询</button>
 			</div>
-			<div class="layui-inline">
-				<button class="layui-btn" lay-submit lay-filter="export">导出</button>
-			</div>
+<!-- 			<div class="layui-inline"> -->
+<!-- 				<button class="layui-btn" lay-submit lay-filter="export">导出</button> -->
+<!-- 			</div> -->
 		</div>
 	</form>
 	<div id="charts"></div>
@@ -31,9 +32,36 @@
 <script>
 	$(function() {
 		$("#charts").width($("#center").width() - 10);
-		$("#charts").height($("#center").height() / 2 - 10);
+		$("#charts").height($("#center").height() / 1.2 - 10);
 		var today = new XDate().addDays(-1).toString("yyyy-MM-dd");
-		var btn_type = "by_range";
+		$('#select_div').append('<select id="select" lay-ignore style="width:0px;height:35px;"></select>');
+// 		$('#select').combotree();
+		$('#select').combotree({
+			panelWidth : 300,
+			panelHeight : $("#center").height() - 60,
+			data :[{
+				id: 1,
+				text: 'Languages',
+				children: [{
+					id: 11,
+					text: 'Java'
+				},{
+					id: 12,
+					text: 'C++'
+				}]
+			}]
+		});
+// 		.combotree('loadData', [{
+// 			id: 1,
+// 			text: 'Languages',
+// 			children: [{
+// 				id: 11,
+// 				text: 'Java'
+// 			},{
+// 				id: 12,
+// 				text: 'C++'
+// 			}]
+// 		}]);
 		/* 初始化方法 */
 		var init = function() {
 			/* 加载表单 */
@@ -43,19 +71,10 @@
 				search();
 				return false;
 			});
-			form.on('submit(export)', function(data) {
-				tableToExcel('table', 'data');
-				return false;
-			});
-			form.on('radio(date_type)', function(data){
-				if (data.value == "日期范围") {
-					btn_type = "by_range";
-				} else {
-					btn_type = "by_total";
-				}
-				refer_date_div();
-			});
-			/* 选择日期控件 */
+// 			form.on('submit(export)', function(data) {
+// 				tableToExcel('table', 'data');
+// 				return false;
+// 			});
 			refer_date_div();
 			/* 查询默认数据 */
 			search();
@@ -64,27 +83,13 @@
 			var laydate = layui.laydate;
 			$("#date_div").empty();
 			$("#date_div").append('<input type="text" class="layui-input" style="width:180px;" id="date">');
-			if (btn_type == "by_range") {
-				laydate.render({
-					elem: '#date',
-					max : -1,
-					range: true,
-					btns : [ 'confirm' ]
-				});
-				$("#date").val(today + " - " + today);
-				btn_type = "by_range";
-			} else {
-				laydate.render({
-					elem : '#date',
-					max : -1,
-					min : '2017-06-12',
-					istime : true,
-					format : 'yyyy-MM-dd',
-					btns : [ 'confirm' ] 
-				});
-				$("#date").val(today);
-				btn_type = "by_total";
-			}
+			laydate.render({
+				elem: '#date',
+				max : -1,
+				range: true,
+				btns : [ 'confirm' ]
+			});
+			$("#date").val(today + " - " + today);
 		};
 		var search = function() {
 			var day = $("#date").val();
@@ -95,7 +100,94 @@
 				});
 				return false;
 			}
-			var days = day.split(" - ");
+
+			var shade_index = layer.load(1, {
+				shade: [0.3,'#fff'] //0.1透明度的白色背景
+			});
+			var myChart = echarts.init(document.getElementById('charts'));
+			var rstMap = {};
+			var rstKeys = [];
+			$.get("http://ds.idc.xiwanglife.com/dataservice/getconfig.do?id=223&para1=&para2=&para3=&para4=2017-08-01&para5=2017-08-05&para6=",
+				function(data) {
+//						alert(JSON.stringify(data));
+					var details = data.details.day.values;
+					rstMap = $DSUtil.ConvertDetailsToMap(details);
+					rstKeys = $DSUtil.GetDetailsKeys(details);
+					series = [ ];
+					for (var i in rstMap) {
+						series.push({
+							name : 'amt_tot',
+							type : 'line',
+							data : rstMap['amt_tot']
+						});
+						rstMap[i]
+					}
+// 					alert(rstKeys);
+					option = {
+						tooltip : {
+							trigger : 'axis',
+							axisPointer : {
+								type : 'cross',
+								crossStyle : {
+									color : '#999'
+								}
+							}
+						},
+						toolbox : {
+							feature : {
+								dataView : {
+									show : true,
+									readOnly : false
+								},
+								magicType : {
+									show : true,
+									type : [ 'line', 'bar' ]
+								},
+								restore : {
+									show : true
+								},
+								saveAsImage : {
+									show : true
+								}
+							}
+						},
+						legend : {
+							data : [ 'amt_tot', 'amt_cc', 'amt_dc' ]
+						},
+						xAxis : [ {
+							type : 'category',
+							data : rstMap['time_key'],
+							axisPointer : {
+								type : 'shadow'
+							}
+						} ],
+						yAxis : [ {
+							type : 'value',
+							name : '金额',
+							axisLabel : {
+								formatter : '{value} 元'
+							}
+						} ],
+						series : [ {
+							name : 'amt_tot',
+							type : 'bar',
+							data : rstMap['amt_tot']
+						}, {
+							name : 'amt_cc',
+							type : 'bar',
+							data : rstMap['amt_cc']
+						}, {
+							name : 'amt_dc',
+							type : 'bar',
+							data : rstMap['amt_dc']
+						} ]
+					};
+
+					// 使用刚指定的配置项和数据显示图表。
+					myChart.setOption(option);
+					layer.closeAll('loading');
+				});
+			/* var days = day.split(" - ");
 			var url = "";
 			if (btn_type == "by_range") {
 				url = 'http://ds.idc.xiwanglife.com/dataservice/getconfig.do?id=205&begin_date=' + days[0].replace(/-/gi, "") + '&end_date=' + days[1].replace(/-/gi, "");
@@ -111,95 +203,6 @@
 				crossDomain : true,
 				jsonpCallback : "sucCallback",
 				success : function(data) {
-
-					var myChart = echarts.init(document.getElementById('charts'));
-					var rstMap = {};
-					var rstKeys = [];
-					$.get("http://ds.idc.xiwanglife.com/dataservice/getconfig.do?id=223&para1=&para2=&para3=&para4=2017-08-01&para5=2017-08-05&para6=",
-						function(data) {
-// 							alert(JSON.stringify(data));
-							var details = data.details.day.values;
-							rstMap = $DSUtil.ConvertDetailsToMap(details);
-							rstKeys = $DSUtil.GetDetailsKeys(details);
-// 							var keys = [];
-// 							// 长度大于0
-// 							if (details.length > 0) {
-// 								// 获得所有 结果表头
-// 								keys = Object.keys(details[0]);
-// 								// 初始化结果map
-// 								for (var i in keys) {
-// 									rstMap[keys[i]] = [];
-// 								}
-// 								// 循环读取数据,结果数据格式为:rstMap['key1'] = ['val1', 'val2', 'val3']
-// 								for (var i in details) {
-// 									for (var j in keys) {
-// 										rstMap[keys[j]].push(details[i][keys[j]]);
-// 									}
-// 								}
-// 							}
-							option = {
-								tooltip : {
-									trigger : 'axis',
-									axisPointer : {
-										type : 'cross',
-										crossStyle : {
-											color : '#999'
-										}
-									}
-								},
-								toolbox : {
-									feature : {
-										dataView : {
-											show : true,
-											readOnly : false
-										},
-										magicType : {
-											show : true,
-											type : [ 'line', 'bar' ]
-										},
-										restore : {
-											show : true
-										},
-										saveAsImage : {
-											show : true
-										}
-									}
-								},
-								legend : {
-									data : [ 'cnt_tot', 'amt_tot', 'fee_tot' ]
-								},
-								xAxis : [ {
-									type : 'category',
-									data : rstMap['time_key'],
-									axisPointer : {
-										type : 'shadow'
-									}
-								} ],
-								yAxis : [ {
-									type : 'value',
-									name : '金额',
-									axisLabel : {
-										formatter : '{value} ml'
-									}
-								} ],
-								series : [ {
-									name : 'cnt_tot',
-									type : 'bar',
-									data : rstMap['cnt_tot']
-								}, {
-									name : 'amt_tot',
-									type : 'bar',
-									data : rstMap['amt_tot']
-								}, {
-									name : 'fee_tot',
-									type : 'bar',
-									data : rstMap['fee_tot']
-								} ]
-							};
-
-							// 使用刚指定的配置项和数据显示图表。
-							myChart.setOption(option);
-						});
 					$("#table").empty();
 					var values = null;
 					var type_name = "";
@@ -251,7 +254,7 @@
 				error : function(data) {
 					alert(JSON.stringify(data));
 				}
-			});
+			}); */
 		};
 		init();
 	});
