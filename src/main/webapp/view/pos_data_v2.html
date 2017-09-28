@@ -2,8 +2,6 @@
 	<form class="layui-form">
 		<div class="layui-form-item">
 			&nbsp;
-			<div class="layui-inline" id="select_div">
-			</div>
 			<div class="layui-inline">
 				日期范围
 			</div>
@@ -11,7 +9,7 @@
 			</div>
 			<div class="layui-inline">
 				<select id="type">
-					<option value="全部" selected>全部</option>
+					<option value="全部" selected>全部（卡种）</option>
 					<option value="借记卡">借记卡</option>
 					<option value="贷记卡">贷记卡</option>
 				</select>
@@ -31,37 +29,9 @@
 
 <script>
 	$(function() {
-		$("#charts").width($("#center").width() - 10);
-		$("#charts").height($("#center").height() / 1.2 - 10);
+		$("#charts").width($("#center").width() - 20);
+		$("#charts").height($("#center").height() - 20);
 		var today = new XDate().addDays(-1).toString("yyyy-MM-dd");
-		$('#select_div').append('<select id="select" lay-ignore style="width:0px;height:35px;"></select>');
-// 		$('#select').combotree();
-		$('#select').combotree({
-			panelWidth : 300,
-			panelHeight : $("#center").height() - 60,
-			data :[{
-				id: 1,
-				text: 'Languages',
-				children: [{
-					id: 11,
-					text: 'Java'
-				},{
-					id: 12,
-					text: 'C++'
-				}]
-			}]
-		});
-// 		.combotree('loadData', [{
-// 			id: 1,
-// 			text: 'Languages',
-// 			children: [{
-// 				id: 11,
-// 				text: 'Java'
-// 			},{
-// 				id: 12,
-// 				text: 'C++'
-// 			}]
-// 		}]);
 		/* 初始化方法 */
 		var init = function() {
 			/* 加载表单 */
@@ -76,8 +46,47 @@
 // 				return false;
 // 			});
 			refer_date_div();
+			/* 加载组织架构 */
+			$.ajax({
+				url: "http://ds.idc.xiwanglife.com/dataservice/getconfig.do?id=227", 
+				async: false,
+				success: function(data) {
+					var provinces = data.details.province.values;
+					var citys = data.details.city.values;
+					var organizes = data.details.organize.values;
+					var province_arr = [];
+					for (var i in provinces) {
+						var city_arr = [];
+						for (var j in citys) {
+							organize_arr = [];
+							for (var k in organizes) {
+								if (organizes[k].city_name == citys[j].city_name) {
+									organize_arr.push({
+										text: organizes[k].organize_name
+									});
+								}
+							}
+							if (citys[j].province_name == provinces[i].province_name) {
+								city_arr.push({
+									text: citys[j].city_name,
+									children: organize_arr
+								});
+							}
+						}
+						province_arr.push({
+							text: provinces[i].province_name,
+							children: city_arr
+						});
+					}
+					$('#organize_tree').tree({
+						checkbox: true,
+						onlyLeafCheck: true,
+						data: province_arr
+					}).tree('collapseAll');
+				}
+			});
 			/* 查询默认数据 */
-			search();
+			// search();
 		};
 		var refer_date_div = function() {
 			var laydate = layui.laydate;
@@ -107,7 +116,28 @@
 			var myChart = echarts.init(document.getElementById('charts'));
 			var rstMap = {};
 			var rstKeys = [];
-			$.get("http://ds.idc.xiwanglife.com/dataservice/getconfig.do?id=223&para1=&para2=&para3=&para4=2017-08-01&para5=2017-08-05&para6=",
+
+			var checks = $('#organize_tree').tree('getChecked', ["checked"]);
+			var organizes = "";
+			for ( var i in checks) {
+				organizes += checks[i].text + ",";
+			}
+			if (organizes != "") {
+				organizes = organizes.substring(0, organizes.length - 1);
+			}
+			var days = day.split(" - ");
+			var day_begin = days[0];
+			var day_end = days[1];
+			// 强制不查询所有数据
+			if (organizes == "") {
+				organizes = "1";
+			}
+			var type = $("#type").val();
+			if (type == "全部") {
+				type = "";
+			}
+			$.post("http://ds.idc.xiwanglife.com/dataservice/getconfig.do",
+				"id=223&para1=&para2=&wherein.para3=" + organizes + "&para4=" + day_begin + "&para5=" + day_end + "&para6=" + type,
 				function(data) {
 //						alert(JSON.stringify(data));
 					var details = data.details.day.values;
@@ -137,7 +167,28 @@
 							feature : {
 								dataView : {
 									show : true,
-									readOnly : false
+									readOnly : true,
+									optionToContent: function (opt) {
+									    var axisData = opt.xAxis[0].data; //坐标数据
+									    var series = opt.series; //折线图数据
+									    var tdHeads = '<table class="layui-table" ><tbody><td style="padding: 0 10px">时间</td>'; //表头
+									    var tdBodys = ''; //数据
+									    series.forEach(function (item) {
+									        //组装表头
+									        tdHeads += `<td >${item.name}</td>`;
+									    });
+									    var table = `<table border="1"><tbody><tr>${tdHeads}</tr>`;
+									    for (var i = 0, l = axisData.length; i < l; i++) {
+									        for (var j = 0; j < series.length; j++) {
+									            //组装表数据
+									            tdBodys += `<td>${series[j].data[i]}</td>`;
+									        }
+									        table += `<tr><td >${axisData[i]}</td>${tdBodys}</tr>`;
+									        tdBodys = '';
+									    }
+									    table += '</tbody></table>';
+									    return table;
+									}
 								},
 								magicType : {
 									show : true,
@@ -187,74 +238,15 @@
 					myChart.setOption(option);
 					layer.closeAll('loading');
 				});
-			/* var days = day.split(" - ");
-			var url = "";
-			if (btn_type == "by_range") {
-				url = 'http://ds.idc.xiwanglife.com/dataservice/getconfig.do?id=205&begin_date=' + days[0].replace(/-/gi, "") + '&end_date=' + days[1].replace(/-/gi, "");
-			} else {
-				url = 'http://ds.idc.xiwanglife.com/dataservice/getconfig.do?id=205&begin_date=' + days[0].replace(/-/gi, "");
-			}
-			var shade_index = layer.load(1, {
-				shade: [0.3,'#fff'] //0.1透明度的白色背景
-			});
-			$.ajax({
-				type : 'post',
-				url : url,
-				crossDomain : true,
-				jsonpCallback : "sucCallback",
-				success : function(data) {
-					$("#table").empty();
-					var values = null;
-					var type_name = "";
-					if (btn_type == "by_range") {
-						values = data.details.range.values;
-						type_name = "日期范围";
-					} else {
-						values = data.details.total.values;
-						type_name = "历史累计";
-					}
-					if (values.length == 0) {
-						layer.open({
-							title : '提示',
-							content : '没有任何数据！'
-						});
-					}
-					var type = $("#type").val();
-					var value = values[0];
-
-					$("#table").append("<tr style='background-color:#ddeaff'><td width='50%'>数据类型</td><td width='50%'>" + type_name + "</td></tr>");
-					$("#table").append("<tr style='background-color:#ddeaff'><td>结算时间</td><td>" + day + "</td></tr>");
-
-					$("#table").append("<tr style='background-color:#fff3dd'><td>总交易笔数</td><td>" + (value == undefined ? "" : value.cnt_tot) + "</td></tr>");
-					$("#table").append("<tr style='background-color:#fff3dd'><td>总交易金额</td><td>" + (value == undefined ? "" : value.amt_tot) + "</td></tr>");
-					$("#table").append("<tr style='background-color:#fff3dd'><td>总交易手续费</td><td>" + (value == undefined ? "" : value.fee_tot) + "</td></tr>");
-					$("#table").append("<tr style='background-color:#fff3dd'><td>总分润金额</td><td>" + (value == undefined ? "" : value.profit_tot) + "</td></tr>");
-					$("#table").append("<tr style='background-color:#fff3dd'><td>恒大总分润金额</td><td>" + (value == undefined ? "" : value.profit_hengda) + "</td></tr>");
-					$("#table").append("<tr style='background-color:#fff3dd'><td>杉德总分润金额</td><td>" + (value == undefined ? "" : value.profit_shande) + "</td></tr>");
-
-					if (type == "全部" || type == "借记卡") {
-						$("#table").append("<tr style='background-color:#f1ffdd'><td>借记卡交易笔数</td><td>" + (value == undefined ? "" : value.cnt_cc) + "</td></tr>");
-						$("#table").append("<tr style='background-color:#f1ffdd'><td>借记卡交易金额</td><td>" + (value == undefined ? "" : value.amt_cc) + "</td></tr>");
-						$("#table").append("<tr style='background-color:#f1ffdd'><td>借记卡交易手续费</td><td>" + (value == undefined ? "" : value.fee_cc) + "</td></tr>");
-						$("#table").append("<tr style='background-color:#f1ffdd'><td>借记卡总分润金额</td><td>" + (value == undefined ? "" : value.profit_cc) + "</td></tr>");
-						$("#table").append("<tr style='background-color:#f1ffdd'><td>借记卡恒大分润金额</td><td>" + (value == undefined ? "" : value.profit_hengda_cc) + "</td></tr>");
-						$("#table").append("<tr style='background-color:#f1ffdd'><td>借记卡彬德分润金额</td><td>" + (value == undefined ? "" : value.profit_shande_cc) + "</td></tr>");
-					}
-
-					if (type == "全部" || type == "贷记卡") {
-						$("#table").append("<tr style='background-color:#edfcff'><td>贷记卡交易笔数</td><td>" + (value == undefined ? "" : value.cnt_dc) + "</td></tr>");
-						$("#table").append("<tr style='background-color:#edfcff'><td>贷记卡交易金额</td><td>" + (value == undefined ? "" : value.amt_dc) + "</td></tr>");
-						$("#table").append("<tr style='background-color:#edfcff'><td>贷记卡交易手续费</td><td>" + (value == undefined ? "" : value.fee_dc) + "</td></tr>");
-						$("#table").append("<tr style='background-color:#edfcff'><td>贷记卡总分润金额</td><td>" + (value == undefined ? "" : value.profit_dc) + "</td></tr>");
-						$("#table").append("<tr style='background-color:#edfcff'><td>贷记卡恒大分润金额</td><td>" + (value == undefined ? "" : value.profit_hengda_dc) + "</td></tr>");
-						$("#table").append("<tr style='background-color:#edfcff'><td>贷记卡彬德分润金额</td><td>" + (value == undefined ? "" : value.profit_shande_dc) + "</td></tr>");
-					}
-					layer.closeAll('loading');
-				},
-				error : function(data) {
-					alert(JSON.stringify(data));
-				}
-			}); */
+		};
+		document.onkeydown = function(e) {
+		    var theEvent = e || window.event;
+		    var code = theEvent.keyCode || theEvent.which || theEvent.charCode;
+		    if (code == 13) {
+		        search();
+		        return false;
+		    }
+		    return true;
 		};
 		init();
 	});

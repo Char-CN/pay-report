@@ -30,6 +30,10 @@
 	<div class="layui-layout layui-layout-admin">
 		<div class="layui-header">
 			<div class="layui-logo" style="font-size: 24px;">恒大支付报表系统</div>
+			<ul class="layui-nav layui-layout-left">
+				<li class="layui-nav-item"><a href="javascript:void(0);" id="pos_data">彬德POS刷卡报表</a></li>
+				<li class="layui-nav-item"><a href="javascript:void(0);" id="pos_data_v2">彬德POS刷卡报表-v2</a></li>
+			</ul>
 			<!-- 头部区域（可配合layui已有的水平导航） -->
 			<ul class="layui-nav layui-layout-right">
 				<li class="layui-nav-item" style=""><a href="javascript:;"></a>
@@ -43,19 +47,16 @@
 					</dl></li>
 			</ul>
 		</div>
-		<div class="layui-side layui-bg-black">
-			<div class="layui-side-scroll">
-				<!-- 左侧导航区域（可配合layui已有的垂直导航） -->
-				<ul class="layui-nav layui-nav-tree" lay-filter="test">
-					<li class="layui-nav-item"><a href="javascript:void(0);" id="pos_data">彬德POS刷卡报表</a></li>
-					<li class="layui-nav-item"><a href="javascript:void(0);" id="pos_data_v2">彬德POS刷卡报表-v2</a></li>
+		<div class="layui-side" style="border-right: 1px solid black;background-color:#E0EEEE">
+			<div class="layui-side-scroll" id="organize_div">
+				<ul id="organize_tree" style="width: 100%;">
 				</ul>
 			</div>
 		</div>
-		<div id="center" class="layui-body" style="padding: 15px; background-color: #f9fcff;">欢迎来到 恒大支付报表系统！</div>
-		<div class="layui-footer">
+		<div id="center" class="layui-body" style="padding: 15px; background-color: #E0EEEE;">欢迎来到 恒大支付报表系统！</div>
+		<div class="layui-footer" style="background-color: #E0EEEE">
 			<!-- 底部固定区域 -->
-			@ 恒大互联网金融集团（大数据及征信中心）版权所有
+			© 恒大互联网金融集团（大数据及征信中心）©版权所有
 		</div>
 	</div>
 	<script type="text/javascript" charset="utf-8" src="layui/layui.js" charset="utf-8"></script>
@@ -64,14 +65,14 @@
 		var $userservice = new $userservice("pay-report");
 		$(function() {
 			/* 用户按钮 */
-			$(".layui-layout-admin>.layui-header>.layui-nav>.layui-nav-item>a").text($userservice.userNameCn);
-			$(".layui-layout-admin>.layui-header>.layui-nav>.layui-nav-item>a").append("<span class='layui-nav-more'></span>");
+			$(".layui-layout-admin>.layui-header>.layui-nav.layui-layout-right>.layui-nav-item>a").text($userservice.userNameCn);
+			$(".layui-layout-admin>.layui-header>.layui-nav.layui-layout-right>.layui-nav-item>a").append("<span class='layui-nav-more'></span>");
 			// 改密
-			$(".layui-layout-admin>.layui-header>.layui-nav>.layui-nav-item>.layui-nav-child>dd>a").eq(0).click(function() {
+			$(".layui-layout-admin>.layui-header>.layui-nav.layui-layout-right>.layui-nav-item>.layui-nav-child>dd>a").eq(0).click(function() {
 				window.open($userservice.pwdHtml);
 			});
 			// 退了
-			$(".layui-layout-admin>.layui-header>.layui-nav>.layui-nav-item>.layui-nav-child>dd>a").eq(1).click(function() {
+			$(".layui-layout-admin>.layui-header>.layui-nav.layui-layout-right>.layui-nav-item>.layui-nav-child>dd>a").eq(1).click(function() {
 				$userservice.logout();
 			});
 			/* 绑定链接 */
