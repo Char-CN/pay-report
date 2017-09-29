@@ -1,0 +1,6 @@
+.word-break {
+	word-break: keep-all;
+	word-wrap: nowrap;
+	white-space: nowrap;
+	text-overflow: ellipsis;
+}

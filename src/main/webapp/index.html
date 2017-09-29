@@ -11,9 +11,11 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="format-detection" content="telephone=no">
 <link rel="stylesheet" href="layui/css/layui.css" media="all">
+<link rel="stylesheet" href="css/commons.css" media="all">
 <!-- easyui -->
 <link rel="stylesheet" type="text/css" href="easyui/themes/bootstrap/easyui.css">
 <script type="text/javascript" charset="utf-8" src="js/jquery.min.js"></script>
+<script src="http://libs.baidu.com/jquery/1.9.1/jquery.min.js"></script>
 <!-- <script type="text/javascript" charset="utf-8" src="easyui/plugins/jquery.validatebox.js"></script> -->
 <!-- <script type="text/javascript" charset="utf-8" src="easyui/plugins/jquery.textbox.js"></script> -->
 <!-- <script type="text/javascript" charset="utf-8" src="easyui/plugins/jquery.tree.js"></script> -->
@@ -31,7 +33,7 @@
 		<div class="layui-header">
 			<div class="layui-logo" style="font-size: 24px;">恒大支付报表系统</div>
 			<ul class="layui-nav layui-layout-left">
-				<li class="layui-nav-item"><a href="javascript:void(0);" id="pos_data">彬德POS刷卡报表</a></li>
+				<li class="layui-nav-item"><a href="javascript:void(0);" id="pos_data">彬德POS刷卡报表-v1</a></li>
 				<li class="layui-nav-item"><a href="javascript:void(0);" id="pos_data_v2">彬德POS刷卡报表-v2</a></li>
 			</ul>
 			<!-- 头部区域（可配合layui已有的水平导航） -->
@@ -47,13 +49,11 @@
 					</dl></li>
 			</ul>
 		</div>
-		<div class="layui-side" style="border-right: 1px solid black;background-color:#E0EEEE">
-			<div class="layui-side-scroll" id="organize_div">
-				<ul id="organize_tree" style="width: 100%;">
-				</ul>
+		<div class="layui-side" style="border-right:1px solid black;background-color:#E0EEEE">
+			<div class="layui-side-scroll" id="organize_div" style="width:100%;">
 			</div>
 		</div>
-		<div id="center" class="layui-body" style="padding: 15px; background-color: #E0EEEE;">欢迎来到 恒大支付报表系统！</div>
+		<div id="center" class="layui-body" style="background-color: #E0EEEE;">欢迎来到 恒大支付报表系统！</div>
 		<div class="layui-footer" style="background-color: #E0EEEE">
 			<!-- 底部固定区域 -->
 			© 恒大互联网金融集团（大数据及征信中心）©版权所有
@@ -77,9 +77,11 @@
 			});
 			/* 绑定链接 */
 			$("#pos_data").click(function() {
+				$("#organize_div").empty();
 				$("#center").load("view/pos_data.html");
 			});
 			$("#pos_data_v2").click(function() {
+				$("#organize_div").empty();
 				$("#center").load("view/pos_data_v2.html");
 			});
 			$("#pos_data_v2").click();

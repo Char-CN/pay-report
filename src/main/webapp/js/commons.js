@@ -91,6 +91,20 @@ var data_service_commons_util = function() {
 		return this.toFixed(num, 0, true);
 	};
 
+	this.getInteger0 = function(num) {
+		if (num == undefined || num == null || num == "") {
+			return 0;
+		}
+		return num;
+	};
+	
+	this.getStringEmpty = function(str) {
+		if (str == undefined || str == null || str == "") {
+			return "";
+		}
+		return str;
+	};
+
 	// 自定义获取keys
 	// old details:[{'key1':'val1','key2':'val2'},{'key1':'val3','key2':'val4'}]
 	// rstKeys:['key1', 'key2']
