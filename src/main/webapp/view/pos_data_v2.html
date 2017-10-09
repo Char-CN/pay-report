@@ -29,6 +29,12 @@
 		$("#charts").width($("#center").width() - 20);
 		$("#charts").height($("#center").height() - 60);
 		var today = new XDate().addDays(-1).toString("yyyy-MM-dd");
+		var customFixed = function(num) {
+			if (num >= 10000) {
+				return $DSUtil.toFixed2(num / 10000) + " 万元";
+			}
+			return num + " 元";
+		};
 		/* 初始化方法 */
 		var init = function() {
 			/* 加载表单 */
@@ -234,7 +240,9 @@
 							type : 'value',
 							name : '金额',
 							axisLabel : {
-								formatter : '{value} 元'
+								formatter : function(value) {
+									return $DSUtil.toFixed0(value/10000) + " 万元";
+								}
 							}
 						} ],
 						series : [ {
@@ -298,13 +306,13 @@
 					total_div.append('<div style="margin-top:30px;">&nbsp;&nbsp;<span style="font-size:22px;">总计</span><span>（'+day_title+'）</span><div>');
 					var total_table = $('<table class="layui-table" style="float:left;margin-top:10px;border:1px solid red;"></table>');
 					total_table.append('<thead><tr style="background-color:'+head_color+';"><td width="25%">&nbsp</td><td style="background-color:'+total_color+';" width="25%">总计</td><td style="background-color:'+jiejika_color+';" width="25%">借记卡</td><td style="background-color:'+daijika_color+';" width="25%">贷记卡</td></tr></thead>');
-					total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">刷卡金额</td><td style="background-color:'+total_color+';" width="25%">'+$DSUtil.getInteger0(total[0].amt_tot)+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+$DSUtil.getInteger0(total[0].amt_cc)+'</td><td style="background-color:'+daijika_color+';" width="25%">'+$DSUtil.getInteger0(total[0].amt_dc)+'</td></tr>');
-					total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">交易笔数</td><td style="background-color:'+total_color+';" width="25%">'+$DSUtil.getInteger0(total[0].cnt_tot)+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+$DSUtil.getInteger0(total[0].cnt_cc)+'</td><td style="background-color:'+daijika_color+'; width="25%">'+$DSUtil.getInteger0(total[0].cnt_dc)+'</td></tr>');
-					total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">分润金额</td><td style="background-color:'+total_color+';" width="25%">'+$DSUtil.getInteger0(total[0].profit_tot)+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+$DSUtil.getInteger0(total[0].profit_cc)+'</td><td style="background-color:'+daijika_color+'; width="25%">'+$DSUtil.getInteger0(total[0].profit_dc)+'</td></tr>');
-					total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">交易手续费</td><td style="background-color:'+total_color+';" width="25%">'+$DSUtil.getInteger0(total[0].fee_tot)+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+$DSUtil.getInteger0(total[0].fee_cc)+'</td><td style="background-color:'+daijika_color+'; width="25%">'+$DSUtil.getInteger0(total[0].fee_dc)+'</td></tr>');
-					total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">恒大分润金额</td><td style="background-color:'+total_color+';" width="25%">'+$DSUtil.getInteger0(total[0].profit_hengda_tot)+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+$DSUtil.getInteger0(total[0].profit_hengda_cc)+'</td><td style="background-color:'+daijika_color+'; width="25%">'+$DSUtil.getInteger0(total[0].profit_hengda_dc)+'</td></tr>');
-					total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">杉德分润金额</td><td style="background-color:'+total_color+';" width="25%">'+$DSUtil.getInteger0(total[0].profit_shande_tot)+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+$DSUtil.getInteger0(total[0].profit_shande_cc)+'</td><td style="background-color:'+daijika_color+'; width="25%">'+$DSUtil.getInteger0(total[0].profit_shande_dc)+'</td></tr>');
-					total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">分润占比（恒大：杉德）</td><td style="background-color:'+total_color+';" width="25%">'+$DSUtil.getInteger0(total[0].prpfit_hengda_rate)+' : '+$DSUtil.getInteger0(total[0].prpfit_shande_rate)+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+$DSUtil.getInteger0(total[0].profit_hengda_cc_rate)+' : '+$DSUtil.getInteger0(total[0].profit_shande_cc_rate)+'</td><td style="background-color:'+daijika_color+'; width="25%">'+$DSUtil.getInteger0(total[0].profit_hengda_dc_rate)+' : '+$DSUtil.getInteger0(total[0].profit_shande_dc_rate)+'</td></tr>');
+					total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">刷卡金额</td><td style="background-color:'+total_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].amt_tot))+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].amt_cc))+'</td><td style="background-color:'+daijika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].amt_dc))+'</td></tr>');
+					total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">交易笔数</td><td style="background-color:'+total_color+';" width="25%">'+$DSUtil.getInteger0(total[0].cnt_tot)+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+$DSUtil.getInteger0(total[0].cnt_cc)+'</td><td style="background-color:'+daijika_color+';" width="25%">'+$DSUtil.getInteger0(total[0].cnt_dc)+'</td></tr>');
+					total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">分润金额</td><td style="background-color:'+total_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_tot))+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_cc))+'</td><td style="background-color:'+daijika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_dc))+'</td></tr>');
+					total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">交易手续费</td><td style="background-color:'+total_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].fee_tot))+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].fee_cc))+'</td><td style="background-color:'+daijika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].fee_dc))+'</td></tr>');
+					total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">恒大分润金额</td><td style="background-color:'+total_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_hengda_tot))+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_hengda_cc))+'</td><td style="background-color:'+daijika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_hengda_dc))+'</td></tr>');
+					total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">杉德分润金额</td><td style="background-color:'+total_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_shande_tot))+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_shande_cc))+'</td><td style="background-color:'+daijika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_shande_dc))+'</td></tr>');
+					total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">分润占比（恒大：杉德）</td><td style="background-color:'+total_color+';" width="25%">'+$DSUtil.getInteger0(total[0].prpfit_hengda_rate)+' : '+$DSUtil.getInteger0(total[0].prpfit_shande_rate)+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+$DSUtil.getInteger0(total[0].profit_hengda_cc_rate)+' : '+$DSUtil.getInteger0(total[0].profit_shande_cc_rate)+'</td><td style="background-color:'+daijika_color+';" width="25%">'+$DSUtil.getInteger0(total[0].profit_hengda_dc_rate)+' : '+$DSUtil.getInteger0(total[0].profit_shande_dc_rate)+'</td></tr>');
 					total_div.append(total_table);
 
 					// 加载 详细 数据表格
@@ -340,7 +348,7 @@
 						var tr = $("<tr></tr>");
 						tr.append('<td class="word-break" style="background-color:'+head_color+';">'+$DSUtil.getInteger0(details[i].time_key)+'</td>');
 						// 总
-						tr.append('<td class="word-break" style="background-color:'+total_color+';">'+$DSUtil.getInteger0(details[i].amt_tot)+'</td>');
+						tr.append('<td class="word-break" style="background-color:'+total_color+';">'+customFixed($DSUtil.getInteger0(details[i].amt_tot))+'</td>');
 						tr.append('<td class="word-break" style="background-color:'+total_color+';">'+$DSUtil.getInteger0(details[i].cnt_tot)+'</td>');
 						tr.append('<td class="word-break" style="background-color:'+total_color+';">'+$DSUtil.getInteger0(details[i].profit_tot)+'</td>');
 						tr.append('<td class="word-break" style="background-color:'+total_color+';">'+$DSUtil.getInteger0(details[i].fee_tot)+'</td>');
