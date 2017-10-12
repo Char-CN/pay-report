@@ -162,11 +162,15 @@
 				organizes = "1";
 			}
 			var type = $("#type").val();
+			var jiejikaFlag = (type == "贷记卡");
+			var daijikaFlag = (type == "借记卡");
 			if (type == "全部") {
 				type = "";
+				jiejikaFlag = true;
+				daijikaFlag = true;
 			}
 			$.post("http://ds.idc.xiwanglife.com/dataservice/getconfig.do",
-				"id=223&para1=&para2=&wherein.para3=" + organizes + "&para4=" + day_begin + "&para5=" + day_end + "&para6=" + type,
+				"id=223&para1=&para2=&wherein.para3=" + organizes + "&para4=" + day_begin + "&para5=" + day_end + "&para6=",
 				function(data) {
 					var head_color = "#edfcff";
 					var total_color = "#C8CDF7";
@@ -227,6 +231,14 @@
 							}
 						},
 						legend : {
+							selected: {
+							    '刷卡总金额': true,
+							    '借记卡总金额': jiejikaFlag,
+							    '贷记卡总金额': daijikaFlag,
+							    '刷卡总笔数': true,
+							    '借记卡笔数': jiejikaFlag,
+							    '贷记卡笔数': daijikaFlag
+							},
 							data : [ '刷卡总金额', '借记卡总金额', '贷记卡总金额', '刷卡总笔数', '借记卡笔数', '贷记卡笔数' ]
 						},
 						xAxis : [ {
@@ -271,7 +283,7 @@
 							data : rstMap['amt_cc'],
 							itemStyle:{
 					            normal:{
-					                color: "#00D924" //图标颜色
+					                color: "#00D924", //图标颜色
 					            }
 					        },
 					        lineStyle:{
@@ -285,7 +297,7 @@
 							data : rstMap['amt_dc'],
 							itemStyle:{
 					            normal:{
-					                color: "#D90000" //图标颜色
+					                color: "#D90000", //图标颜色
 					            }
 					        },
 					        lineStyle:{
