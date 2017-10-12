@@ -172,7 +172,7 @@
 					var total_color = "#C8CDF7";
 					var jiejika_color = "#A5EB9D";
 					var daijika_color = "#F7907A";
-//						alert(JSON.stringify(data));
+// 						alert(JSON.stringify(data));
 					var details = data.details.day.values;
 					rstMap = $DSUtil.ConvertDetailsToMap(details);
 					rstKeys = $DSUtil.GetDetailsKeys(details);
@@ -190,7 +190,7 @@
 						toolbox : {
 							feature : {
 								dataView : {
-									show : true,
+									show : false,
 									readOnly : true,
 									optionToContent: function (opt) {
 									    var axisData = opt.xAxis[0].data; //坐标数据
@@ -215,7 +215,7 @@
 									}
 								},
 								magicType : {
-									show : true,
+									show : false,
 									type : [ 'line', 'bar' ]
 								},
 								restore : {
@@ -227,7 +227,7 @@
 							}
 						},
 						legend : {
-							data : [ '刷卡总金额', '借记卡总金额', '贷记卡总金额' ]
+							data : [ '刷卡总金额', '借记卡总金额', '贷记卡总金额', '刷卡总笔数', '借记卡笔数', '贷记卡笔数' ]
 						},
 						xAxis : [ {
 							type : 'category',
@@ -244,7 +244,13 @@
 									return $DSUtil.toFixed0(value/10000) + " 万元";
 								}
 							}
-						} ],
+						}, {
+							type: 'value',
+							name: '笔数',
+							axisLabel: {
+							    formatter: '{value} 比'
+							}
+				        } ],
 						series : [ {
 							name : '刷卡总金额',
 							type : 'bar',
@@ -256,7 +262,6 @@
 					        },
 					        lineStyle:{
 					            normal:{
-					                width:10,
 					                color: "#7820F0" //图标颜色
 					            }
 					        }
@@ -271,7 +276,6 @@
 					        },
 					        lineStyle:{
 					            normal:{
-					                width:10,
 					                color: "#00D924" //图标颜色
 					            }
 					        }
@@ -286,7 +290,51 @@
 					        },
 					        lineStyle:{
 					            normal:{
-					                width:10,
+					                color: "#D90000" //图标颜色
+					            }
+					        }
+						}, {
+							name : '刷卡总笔数',
+							type : 'line',
+							data : rstMap['cnt_tot'],
+				            yAxisIndex: 1,
+							itemStyle:{
+					            normal:{
+					                color: "#7820F0" //图标颜色
+					            }
+					        },
+					        lineStyle:{
+					            normal:{
+					                color: "#7820F0" //图标颜色
+					            }
+					        }
+						}, {
+							name : '借记卡笔数',
+							type : 'line',
+							data : rstMap['cnt_cc'],
+				            yAxisIndex: 1,
+							itemStyle:{
+					            normal:{
+					                color: "#00D924" //图标颜色
+					            }
+					        },
+					        lineStyle:{
+					            normal:{
+					                color: "#00D924" //图标颜色
+					            }
+					        }
+						}, {
+							name : '贷记卡笔数',
+							type : 'line',
+							data : rstMap['cnt_dc'],
+				            yAxisIndex: 1,
+							itemStyle:{
+					            normal:{
+					                color: "#D90000" //图标颜色
+					            }
+					        },
+					        lineStyle:{
+					            normal:{
 					                color: "#D90000" //图标颜色
 					            }
 					        }
