@@ -20,6 +20,7 @@
 		</div>
 	</form>
 	<div id="charts" style="float:left;margin-top: 20px;"></div>
+	<div id="charts2" style="float:left;margin-top: 20px;"></div>
 	<div id="total_div" style="float:left;margin-top: 20px;"></div>
 	<div id="details_div" style="float:left;margin-top: 20px;margin-bottom: 30px;"></div>
 </div>
@@ -27,7 +28,9 @@
 	$(function() {
 		$("#center_child").width($("#center").width() - 20);
 		$("#charts").width($("#center").width() - 20);
-		$("#charts").height($("#center").height() - 60);
+		$("#charts").height($("#center").height() /2 - 60);
+		$("#charts2").width($("#center").width() - 20);
+		$("#charts2").height($("#center").height() /2 - 60);
 		var today = new XDate().addDays(-1).toString("yyyy-MM-dd");
 		var customFixed = function(num) {
 			if (num >= 10000) {
@@ -125,6 +128,8 @@
 			});
 			$("#date").val(today + " - " + today);
 		};
+		var _req_data = null;
+		var _resp_data = null;
 		var search = function() {
 			var day = $("#date").val();
 			var day_title = day;
@@ -140,6 +145,7 @@
 				shade: [0.3,'#fff'] //0.1透明度的白色背景
 			});
 			var myChart = echarts.init(document.getElementById('charts'));
+			var myChart2 = echarts.init(document.getElementById('charts2'));
 			var rstMap = {};
 			var rstKeys = [];
 
@@ -162,281 +168,281 @@
 				organizes = "1";
 			}
 			var type = $("#type").val();
-			var jiejikaFlag = (type == "贷记卡");
-			var daijikaFlag = (type == "借记卡");
+			var jiejikaFlag = (type == "借记卡");
+			var daijikaFlag = (type == "贷记卡");
 			if (type == "全部") {
 				type = "";
 				jiejikaFlag = true;
 				daijikaFlag = true;
 			}
-			$.post("http://ds.idc.xiwanglife.com/dataservice/getconfig.do",
-				"id=223&para1=&para2=&wherein.para3=" + organizes + "&para4=" + day_begin + "&para5=" + day_end + "&para6=",
-				function(data) {
-					var head_color = "#edfcff";
-					var total_color = "#C8CDF7";
-					var jiejika_color = "#A5EB9D";
-					var daijika_color = "#F7907A";
-// 						alert(JSON.stringify(data));
-					var details = data.details.day.values;
-					rstMap = $DSUtil.ConvertDetailsToMap(details);
-					rstKeys = $DSUtil.GetDetailsKeys(details);
-// 					alert(rstKeys);
-					option = {
-						tooltip : {
-							trigger : 'axis',
-							axisPointer : {
-								type : 'cross',
-								crossStyle : {
-									color : '#999'
-								}
+			var req_url = "http://ds.idc.xiwanglife.com/dataservice/getconfig.do";
+			var req_data = "id=223&para1=&para2=&wherein.para3=" + organizes + "&para4=" + day_begin + "&para5=" + day_end + "&para6=";
+			var req_handler = function(data) {
+				_resp_data = data;
+				var head_color = "#edfcff";
+				var total_color = "#C8CDF7";
+				var jiejika_color = "#A5EB9D";
+				var daijika_color = "#F7907A";
+//						alert(JSON.stringify(data));
+				var details = data.details.day.values;
+				rstMap = $DSUtil.ConvertDetailsToMap(details);
+				rstKeys = $DSUtil.GetDetailsKeys(details);
+//					alert(rstKeys);
+				option = {
+					tooltip : {
+						trigger : 'axis',
+						axisPointer : {
+							type : 'cross',
+							crossStyle : {
+								color : '#999'
 							}
+						}
+					},
+					legend : {
+						selected: {
+						    '刷卡总金额': true,
+						    '借记卡总金额': jiejikaFlag,
+						    '贷记卡总金额': daijikaFlag
 						},
-						toolbox : {
-							feature : {
-								dataView : {
-									show : false,
-									readOnly : true,
-									optionToContent: function (opt) {
-									    var axisData = opt.xAxis[0].data; //坐标数据
-									    var series = opt.series; //折线图数据
-									    var tdHeads = '<table class="layui-table" ><tbody><td style="padding: 0 10px">时间</td>'; //表头
-									    var tdBodys = ''; //数据
-									    series.forEach(function (item) {
-									        //组装表头
-									        tdHeads += '<td>' + item.name + '</td>';
-									    });
-									    var table = '<table border="1"><tbody><tr>' + tdHeads + '</tr>';
-									    for (var i = 0, l = axisData.length; i < l; i++) {
-									        for (var j = 0; j < series.length; j++) {
-									            //组装表数据
-									            tdBodys += '<td>' + series[j].data[i] + '</td>';
-									        }
-									        table += '<tr style="height:23px;"><td>' + axisData[i] + '</td>' + tdBodys + '</tr>';
-									        tdBodys = '';
-									    }
-									    table += '</tbody></table>';
-									    return table;
-									}
-								},
-								magicType : {
-									show : false,
-									type : [ 'line', 'bar' ]
-								},
-								restore : {
-									show : true
-								},
-								saveAsImage : {
-									show : true
-								}
-							}
+						data : [ '刷卡总金额', '借记卡总金额', '贷记卡总金额' ]
+					},
+					xAxis : [ {
+						type : 'category',
+						data : rstMap['time_key'],
+						axisPointer : {
+							type : 'shadow'
+						}
+					} ],
+					yAxis : [ {
+						type : 'value',
+						name : '金额',
+						splitLine : {
+							show : false
 						},
-						legend : {
-							selected: {
-							    '刷卡总金额': true,
-							    '借记卡总金额': jiejikaFlag,
-							    '贷记卡总金额': daijikaFlag,
-							    '刷卡总笔数': true,
-							    '借记卡笔数': jiejikaFlag,
-							    '贷记卡笔数': daijikaFlag
-							},
-							data : [ '刷卡总金额', '借记卡总金额', '贷记卡总金额', '刷卡总笔数', '借记卡笔数', '贷记卡笔数' ]
-						},
-						xAxis : [ {
-							type : 'category',
-							data : rstMap['time_key'],
-							axisPointer : {
-								type : 'shadow'
+						axisLabel : {
+							formatter : function(value) {
+								return $DSUtil.toFixed0(value/10000) + " 万元";
 							}
-						} ],
-						yAxis : [ {
-							type : 'value',
-							name : '金额',
-							axisLabel : {
-								formatter : function(value) {
-									return $DSUtil.toFixed0(value/10000) + " 万元";
-								}
-							}
-						}, {
-							type: 'value',
-							name: '笔数',
-							axisLabel: {
-							    formatter: '{value} 比'
-							}
-				        } ],
-						series : [ {
-							name : '刷卡总金额',
-							type : 'bar',
-							data : rstMap['amt_tot'],
-							itemStyle:{
-					            normal:{
-					                color: "#7820F0" //图标颜色
-					            }
-					        },
-					        lineStyle:{
-					            normal:{
-					                color: "#7820F0" //图标颜色
-					            }
-					        }
-						}, {
-							name : '借记卡总金额',
-							type : 'bar',
-							data : rstMap['amt_cc'],
-							itemStyle:{
-					            normal:{
-					                color: "#00D924", //图标颜色
-					            }
-					        },
-					        lineStyle:{
-					            normal:{
-					                color: "#00D924" //图标颜色
-					            }
-					        }
-						}, {
-							name : '贷记卡总金额',
-							type : 'bar',
-							data : rstMap['amt_dc'],
-							itemStyle:{
-					            normal:{
-					                color: "#D90000", //图标颜色
-					            }
-					        },
-					        lineStyle:{
-					            normal:{
-					                color: "#D90000" //图标颜色
-					            }
-					        }
-						}, {
-							name : '刷卡总笔数',
-							type : 'line',
-							data : rstMap['cnt_tot'],
-				            yAxisIndex: 1,
-							itemStyle:{
-					            normal:{
-					                color: "#7820F0" //图标颜色
-					            }
-					        },
-					        lineStyle:{
-					            normal:{
-					                color: "#7820F0" //图标颜色
-					            }
-					        }
-						}, {
-							name : '借记卡笔数',
-							type : 'line',
-							data : rstMap['cnt_cc'],
-				            yAxisIndex: 1,
-							itemStyle:{
-					            normal:{
-					                color: "#00D924" //图标颜色
-					            }
-					        },
-					        lineStyle:{
-					            normal:{
-					                color: "#00D924" //图标颜色
-					            }
-					        }
-						}, {
-							name : '贷记卡笔数',
-							type : 'line',
-							data : rstMap['cnt_dc'],
-				            yAxisIndex: 1,
-							itemStyle:{
-					            normal:{
-					                color: "#D90000" //图标颜色
-					            }
-					        },
-					        lineStyle:{
-					            normal:{
-					                color: "#D90000" //图标颜色
-					            }
-					        }
-						} ]
-					};
-					// 使用刚指定的配置项和数据显示图表。
-					myChart.setOption(option);
-					layer.closeAll('loading');
+						}
+					} ],
+					series : [ {
+						name : '刷卡总金额',
+						type : 'bar',
+						data : rstMap['amt_tot'],
+						itemStyle:{
+				            normal:{
+				                color: "#7820F0" //图标颜色
+				            }
+				        },
+				        lineStyle:{
+				            normal:{
+				                color: "#7820F0" //图标颜色
+				            }
+				        }
+					}, {
+						name : '借记卡总金额',
+						type : 'bar',
+						data : rstMap['amt_cc'],
+						itemStyle:{
+				            normal:{
+				                color: "#00D924", //图标颜色
+				            }
+				        },
+				        lineStyle:{
+				            normal:{
+				                color: "#00D924" //图标颜色
+				            }
+				        }
+					}, {
+						name : '贷记卡总金额',
+						type : 'bar',
+						data : rstMap['amt_dc'],
+						itemStyle:{
+				            normal:{
+				                color: "#D90000", //图标颜色
+				            }
+				        },
+				        lineStyle:{
+				            normal:{
+				                color: "#D90000" //图标颜色
+				            }
+				        }
+					} ]
+				};
+				// 使用刚指定的配置项和数据显示图表。
+				myChart.setOption(option);
+				layer.closeAll('loading');
 
-					// 加载 总计 数据表格
-					var total = data.details.total.values;
-					var total_div = $("#total_div");
-					total_div.empty();
-					total_div.width($("#center").width()-$("#center").width()/10);
-					$("#total_div").css('margin-left', '30px');
-					
-					total_div.append('<div style="margin-top:30px;">&nbsp;&nbsp;<span style="font-size:22px;">总计</span><span>（'+day_title+'）</span><div>');
-					var total_table = $('<table class="layui-table" style="float:left;margin-top:10px;border:1px solid red;"></table>');
-					total_table.append('<thead><tr style="background-color:'+head_color+';"><td width="25%">&nbsp</td><td style="background-color:'+total_color+';" width="25%">总计</td><td style="background-color:'+jiejika_color+';" width="25%">借记卡</td><td style="background-color:'+daijika_color+';" width="25%">贷记卡</td></tr></thead>');
-					total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">刷卡金额</td><td style="background-color:'+total_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].amt_tot))+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].amt_cc))+'</td><td style="background-color:'+daijika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].amt_dc))+'</td></tr>');
-					total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">交易笔数</td><td style="background-color:'+total_color+';" width="25%">'+$DSUtil.getInteger0(total[0].cnt_tot)+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+$DSUtil.getInteger0(total[0].cnt_cc)+'</td><td style="background-color:'+daijika_color+';" width="25%">'+$DSUtil.getInteger0(total[0].cnt_dc)+'</td></tr>');
-					total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">分润金额</td><td style="background-color:'+total_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_tot))+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_cc))+'</td><td style="background-color:'+daijika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_dc))+'</td></tr>');
-					total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">交易手续费</td><td style="background-color:'+total_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].fee_tot))+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].fee_cc))+'</td><td style="background-color:'+daijika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].fee_dc))+'</td></tr>');
-					total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">恒大分润金额</td><td style="background-color:'+total_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_hengda_tot))+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_hengda_cc))+'</td><td style="background-color:'+daijika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_hengda_dc))+'</td></tr>');
-					total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">杉德分润金额</td><td style="background-color:'+total_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_shande_tot))+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_shande_cc))+'</td><td style="background-color:'+daijika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_shande_dc))+'</td></tr>');
-					total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">分润占比（恒大：杉德）</td><td style="background-color:'+total_color+';" width="25%">'+$DSUtil.getInteger0(total[0].prpfit_hengda_rate)+' : '+$DSUtil.getInteger0(total[0].prpfit_shande_rate)+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+$DSUtil.getInteger0(total[0].profit_hengda_cc_rate)+' : '+$DSUtil.getInteger0(total[0].profit_shande_cc_rate)+'</td><td style="background-color:'+daijika_color+';" width="25%">'+$DSUtil.getInteger0(total[0].profit_hengda_dc_rate)+' : '+$DSUtil.getInteger0(total[0].profit_shande_dc_rate)+'</td></tr>');
-					total_div.append(total_table);
+				option2 = {
+					tooltip : {
+						trigger : 'axis',
+						axisPointer : {
+							type : 'cross',
+							crossStyle : {
+								color : '#999'
+							}
+						}
+					},
+					legend : {
+						selected: {
+						    '刷卡总笔数': true,
+						    '借记卡笔数': jiejikaFlag,
+						    '贷记卡笔数': daijikaFlag
+						},
+						data : [ '刷卡总金额', '借记卡总金额', '贷记卡总金额', '刷卡总笔数', '借记卡笔数', '贷记卡笔数' ]
+					},
+					xAxis : [ {
+						type : 'category',
+						data : rstMap['time_key'],
+						axisPointer : {
+							type : 'shadow'
+						}
+					} ],
+					yAxis : [ {
+						type: 'value',
+						name: '笔数',
+						splitLine : {
+							show : false
+						},
+						axisLabel: {
+						    formatter: '{value} 比'
+						}
+			        } ],
+					series : [ {
+						name : '刷卡总笔数',
+						type : 'bar',
+						data : rstMap['cnt_tot'],
+						itemStyle:{
+				            normal:{
+				                color: "#7820F0" //图标颜色
+				            }
+				        },
+				        lineStyle:{
+				            normal:{
+				                color: "#7820F0" //图标颜色
+				            }
+				        }
+					}, {
+						name : '借记卡笔数',
+						type : 'bar',
+						data : rstMap['cnt_cc'],
+						itemStyle:{
+				            normal:{
+				                color: "#00D924" //图标颜色
+				            }
+				        },
+				        lineStyle:{
+				            normal:{
+				                color: "#00D924" //图标颜色
+				            }
+				        }
+					}, {
+						name : '贷记卡笔数',
+						type : 'bar',
+						data : rstMap['cnt_dc'],
+						itemStyle:{
+				            normal:{
+				                color: "#D90000" //图标颜色
+				            }
+				        },
+				        lineStyle:{
+				            normal:{
+				                color: "#D90000" //图标颜色
+				            }
+				        }
+					} ]
+				};
+				// 使用刚指定的配置项和数据显示图表。
+				myChart2.setOption(option2);
 
-					// 加载 详细 数据表格
-					var details_div = $("#details_div");
-					details_div.empty();
-					details_div.width($("#center").width()-$("#center").width()/10);
-					details_div.css('margin-left', '30px');
-					
-					details_div.append('<div style="font-size:22px;margin-top:30px;">&nbsp;&nbsp;明细<div>');
-					var table_details = $('<table class="layui-table" style="overflow:scroll;background-color:#D1EEEE;margin-top:10px;"></table>');
-					var thead = $("<thead><tr></tr></thead>");
-					thead.append('<td class="word-break" style="background-color:'+head_color+';">日期</td>');
-					thead.append('<td class="word-break" style="background-color:'+total_color+';">刷卡总金额</td>');
-					thead.append('<td class="word-break" style="background-color:'+total_color+';">总交易笔数</td>');
-					thead.append('<td class="word-break" style="background-color:'+total_color+';">总分润金额</td>');
-					thead.append('<td class="word-break" style="background-color:'+total_color+';">总交易手续费</td>');
-					thead.append('<td class="word-break" style="background-color:'+total_color+';">恒大分润金额</td>');
-					thead.append('<td class="word-break" style="background-color:'+total_color+';">杉德分润金额</td>');
-					thead.append('<td class="word-break" style="background-color:'+jiejika_color+';">借记卡金额</td>');
-					thead.append('<td class="word-break" style="background-color:'+jiejika_color+';">借记卡交易笔数</td>');
-					thead.append('<td class="word-break" style="background-color:'+jiejika_color+';">借记卡分润金额</td>');
-					thead.append('<td class="word-break" style="background-color:'+jiejika_color+';">借记卡交易手续费</td>');
-					thead.append('<td class="word-break" style="background-color:'+jiejika_color+';">恒大分润金额</td>');
-					thead.append('<td class="word-break" style="background-color:'+jiejika_color+';">杉德分润金额</td>');
-					thead.append('<td class="word-break" style="background-color:'+daijika_color+';">贷记卡金额</td>');
-					thead.append('<td class="word-break" style="background-color:'+daijika_color+';">贷记卡交易笔数</td>');
-					thead.append('<td class="word-break" style="background-color:'+daijika_color+';">贷记卡分润金额</td>');
-					thead.append('<td class="word-break" style="background-color:'+daijika_color+';">贷记卡交易手续费</td>');
-					thead.append('<td class="word-break" style="background-color:'+daijika_color+';">恒大分润金额</td>');
-					thead.append('<td class="word-break" style="background-color:'+daijika_color+';">杉德分润金额</td>');
-					var tbody = $("<tbody></tbody>");
-					for (var i in details) {
-						var tr = $("<tr></tr>");
-						tr.append('<td class="word-break" style="background-color:'+head_color+';">'+$DSUtil.getInteger0(details[i].time_key)+'</td>');
-						// 总
-						tr.append('<td class="word-break" style="background-color:'+total_color+';">'+customFixed($DSUtil.getInteger0(details[i].amt_tot))+'</td>');
-						tr.append('<td class="word-break" style="background-color:'+total_color+';">'+$DSUtil.getInteger0(details[i].cnt_tot)+'</td>');
-						tr.append('<td class="word-break" style="background-color:'+total_color+';">'+$DSUtil.getInteger0(details[i].profit_tot)+'</td>');
-						tr.append('<td class="word-break" style="background-color:'+total_color+';">'+$DSUtil.getInteger0(details[i].fee_tot)+'</td>');
-						tr.append('<td class="word-break" style="background-color:'+total_color+';">'+$DSUtil.getInteger0(details[i].profit_hengda_tot)+'</td>');
-						tr.append('<td class="word-break" style="background-color:'+total_color+';">'+$DSUtil.getInteger0(details[i].profit_shande_tot)+'</td>');
-						// 借记卡
-						tr.append('<td class="word-break" style="background-color:'+jiejika_color+';">'+$DSUtil.getInteger0(details[i].amt_cc)+'</td>');
-						tr.append('<td class="word-break" style="background-color:'+jiejika_color+';">'+$DSUtil.getInteger0(details[i].cnt_cc)+'</td>');
-						tr.append('<td class="word-break" style="background-color:'+jiejika_color+';">'+$DSUtil.getInteger0(details[i].profit_cc)+'</td>');
-						tr.append('<td class="word-break" style="background-color:'+jiejika_color+';">'+$DSUtil.getInteger0(details[i].fee_cc)+'</td>');
-						tr.append('<td class="word-break" style="background-color:'+jiejika_color+';">'+$DSUtil.getInteger0(details[i].profit_hengda_cc)+'</td>');
-						tr.append('<td class="word-break" style="background-color:'+jiejika_color+';">'+$DSUtil.getInteger0(details[i].profit_shande_cc)+'</td>');
-						// 贷记卡
-						tr.append('<td class="word-break" style="background-color:'+daijika_color+';">'+$DSUtil.getInteger0(details[i].amt_dc)+'</td>');
-						tr.append('<td class="word-break" style="background-color:'+daijika_color+';">'+$DSUtil.getInteger0(details[i].cnt_dc)+'</td>');
-						tr.append('<td class="word-break" style="background-color:'+daijika_color+';">'+$DSUtil.getInteger0(details[i].profit_dc)+'</td>');
-						tr.append('<td class="word-break" style="background-color:'+daijika_color+';">'+$DSUtil.getInteger0(details[i].fee_dc)+'</td>');
-						tr.append('<td class="word-break" style="background-color:'+daijika_color+';">'+$DSUtil.getInteger0(details[i].profit_hengda_dc)+'</td>');
-						tr.append('<td class="word-break" style="background-color:'+daijika_color+';">'+$DSUtil.getInteger0(details[i].profit_shande_dc)+'</td>');
-						tbody.append(tr);
-					}
-					table_details.append(thead);
-					table_details.append(tbody);
-					overflow:scroll;
-					var inner_div = $('<div style="overflow:scroll;"></div>');
-					inner_div.append(table_details);
-					details_div.append(inner_div);
-				});
+				// 加载 总计 数据表格
+				var total = data.details.total.values;
+				var total_div = $("#total_div");
+				total_div.empty();
+				total_div.width($("#center").width()-$("#center").width()/10);
+				$("#total_div").css('margin-left', '30px');
+				
+				total_div.append('<div style="margin-top:30px;">&nbsp;&nbsp;<span style="font-size:22px;">总计</span><span>（'+day_title+'）</span><div>');
+				var total_table = $('<table class="layui-table" style="float:left;margin-top:10px;border:1px solid red;"></table>');
+				total_table.append('<thead><tr style="background-color:'+head_color+';"><td width="25%">&nbsp</td><td style="background-color:'+total_color+';" width="25%">总计</td><td style="background-color:'+jiejika_color+';" width="25%">借记卡</td><td style="background-color:'+daijika_color+';" width="25%">贷记卡</td></tr></thead>');
+				total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">刷卡金额</td><td style="background-color:'+total_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].amt_tot))+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].amt_cc))+'</td><td style="background-color:'+daijika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].amt_dc))+'</td></tr>');
+				total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">交易笔数</td><td style="background-color:'+total_color+';" width="25%">'+$DSUtil.getInteger0(total[0].cnt_tot)+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+$DSUtil.getInteger0(total[0].cnt_cc)+'</td><td style="background-color:'+daijika_color+';" width="25%">'+$DSUtil.getInteger0(total[0].cnt_dc)+'</td></tr>');
+				total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">分润金额</td><td style="background-color:'+total_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_tot))+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_cc))+'</td><td style="background-color:'+daijika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_dc))+'</td></tr>');
+				total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">交易手续费</td><td style="background-color:'+total_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].fee_tot))+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].fee_cc))+'</td><td style="background-color:'+daijika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].fee_dc))+'</td></tr>');
+				total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">恒大分润金额</td><td style="background-color:'+total_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_hengda_tot))+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_hengda_cc))+'</td><td style="background-color:'+daijika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_hengda_dc))+'</td></tr>');
+				total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">杉德分润金额</td><td style="background-color:'+total_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_shande_tot))+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_shande_cc))+'</td><td style="background-color:'+daijika_color+';" width="25%">'+customFixed($DSUtil.getInteger0(total[0].profit_shande_dc))+'</td></tr>');
+				total_table.append('<tr><td style="background-color:'+head_color+';" width="25%">分润占比（恒大：杉德）</td><td style="background-color:'+total_color+';" width="25%">'+$DSUtil.getInteger0(total[0].prpfit_hengda_rate)+' : '+$DSUtil.getInteger0(total[0].prpfit_shande_rate)+'</td><td style="background-color:'+jiejika_color+';" width="25%">'+$DSUtil.getInteger0(total[0].profit_hengda_cc_rate)+' : '+$DSUtil.getInteger0(total[0].profit_shande_cc_rate)+'</td><td style="background-color:'+daijika_color+';" width="25%">'+$DSUtil.getInteger0(total[0].profit_hengda_dc_rate)+' : '+$DSUtil.getInteger0(total[0].profit_shande_dc_rate)+'</td></tr>');
+				total_div.append(total_table);
+
+				// 加载 详细 数据表格
+				var details_div = $("#details_div");
+				details_div.empty();
+				details_div.width($("#center").width()-$("#center").width()/10);
+				details_div.css('margin-left', '30px');
+				
+				details_div.append('<div style="font-size:22px;margin-top:30px;">&nbsp;&nbsp;明细<div>');
+				var table_details = $('<table class="layui-table" style="overflow:scroll;background-color:#D1EEEE;margin-top:10px;"></table>');
+				var thead = $("<thead><tr></tr></thead>");
+				thead.append('<td class="word-break" style="background-color:'+head_color+';">日期</td>');
+				thead.append('<td class="word-break" style="background-color:'+total_color+';">刷卡总金额</td>');
+				thead.append('<td class="word-break" style="background-color:'+total_color+';">总交易笔数</td>');
+				thead.append('<td class="word-break" style="background-color:'+total_color+';">总分润金额</td>');
+				thead.append('<td class="word-break" style="background-color:'+total_color+';">总交易手续费</td>');
+				thead.append('<td class="word-break" style="background-color:'+total_color+';">恒大分润金额</td>');
+				thead.append('<td class="word-break" style="background-color:'+total_color+';">杉德分润金额</td>');
+				thead.append('<td class="word-break" style="background-color:'+jiejika_color+';">借记卡金额</td>');
+				thead.append('<td class="word-break" style="background-color:'+jiejika_color+';">借记卡交易笔数</td>');
+				thead.append('<td class="word-break" style="background-color:'+jiejika_color+';">借记卡分润金额</td>');
+				thead.append('<td class="word-break" style="background-color:'+jiejika_color+';">借记卡交易手续费</td>');
+				thead.append('<td class="word-break" style="background-color:'+jiejika_color+';">恒大分润金额</td>');
+				thead.append('<td class="word-break" style="background-color:'+jiejika_color+';">杉德分润金额</td>');
+				thead.append('<td class="word-break" style="background-color:'+daijika_color+';">贷记卡金额</td>');
+				thead.append('<td class="word-break" style="background-color:'+daijika_color+';">贷记卡交易笔数</td>');
+				thead.append('<td class="word-break" style="background-color:'+daijika_color+';">贷记卡分润金额</td>');
+				thead.append('<td class="word-break" style="background-color:'+daijika_color+';">贷记卡交易手续费</td>');
+				thead.append('<td class="word-break" style="background-color:'+daijika_color+';">恒大分润金额</td>');
+				thead.append('<td class="word-break" style="background-color:'+daijika_color+';">杉德分润金额</td>');
+				var tbody = $("<tbody></tbody>");
+				for (var i in details) {
+					var tr = $("<tr></tr>");
+					tr.append('<td class="word-break" style="background-color:'+head_color+';">'+$DSUtil.getInteger0(details[i].time_key)+'</td>');
+					// 总
+					tr.append('<td class="word-break" style="background-color:'+total_color+';">'+customFixed($DSUtil.getInteger0(details[i].amt_tot))+'</td>');
+					tr.append('<td class="word-break" style="background-color:'+total_color+';">'+$DSUtil.getInteger0(details[i].cnt_tot)+'</td>');
+					tr.append('<td class="word-break" style="background-color:'+total_color+';">'+$DSUtil.getInteger0(details[i].profit_tot)+'</td>');
+					tr.append('<td class="word-break" style="background-color:'+total_color+';">'+$DSUtil.getInteger0(details[i].fee_tot)+'</td>');
+					tr.append('<td class="word-break" style="background-color:'+total_color+';">'+$DSUtil.getInteger0(details[i].profit_hengda_tot)+'</td>');
+					tr.append('<td class="word-break" style="background-color:'+total_color+';">'+$DSUtil.getInteger0(details[i].profit_shande_tot)+'</td>');
+					// 借记卡
+					tr.append('<td class="word-break" style="background-color:'+jiejika_color+';">'+$DSUtil.getInteger0(details[i].amt_cc)+'</td>');
+					tr.append('<td class="word-break" style="background-color:'+jiejika_color+';">'+$DSUtil.getInteger0(details[i].cnt_cc)+'</td>');
+					tr.append('<td class="word-break" style="background-color:'+jiejika_color+';">'+$DSUtil.getInteger0(details[i].profit_cc)+'</td>');
+					tr.append('<td class="word-break" style="background-color:'+jiejika_color+';">'+$DSUtil.getInteger0(details[i].fee_cc)+'</td>');
+					tr.append('<td class="word-break" style="background-color:'+jiejika_color+';">'+$DSUtil.getInteger0(details[i].profit_hengda_cc)+'</td>');
+					tr.append('<td class="word-break" style="background-color:'+jiejika_color+';">'+$DSUtil.getInteger0(details[i].profit_shande_cc)+'</td>');
+					// 贷记卡
+					tr.append('<td class="word-break" style="background-color:'+daijika_color+';">'+$DSUtil.getInteger0(details[i].amt_dc)+'</td>');
+					tr.append('<td class="word-break" style="background-color:'+daijika_color+';">'+$DSUtil.getInteger0(details[i].cnt_dc)+'</td>');
+					tr.append('<td class="word-break" style="background-color:'+daijika_color+';">'+$DSUtil.getInteger0(details[i].profit_dc)+'</td>');
+					tr.append('<td class="word-break" style="background-color:'+daijika_color+';">'+$DSUtil.getInteger0(details[i].fee_dc)+'</td>');
+					tr.append('<td class="word-break" style="background-color:'+daijika_color+';">'+$DSUtil.getInteger0(details[i].profit_hengda_dc)+'</td>');
+					tr.append('<td class="word-break" style="background-color:'+daijika_color+';">'+$DSUtil.getInteger0(details[i].profit_shande_dc)+'</td>');
+					tbody.append(tr);
+				}
+				table_details.append(thead);
+				table_details.append(tbody);
+				overflow:scroll;
+				var inner_div = $('<div style="overflow:scroll;"></div>');
+				inner_div.append(table_details);
+				details_div.append(inner_div);
+			}
+			// 缓存好查过的数据，遇到相同条件时，避免重复请求。
+			if (req_data == _req_data) {
+				req_handler(_resp_data);
+			} else {
+				_req_data = req_data;
+				$.post(req_url, req_data, req_handler);
+			}
 		};
 		document.onkeydown = function(e) {
 		    var theEvent = e || window.event;
