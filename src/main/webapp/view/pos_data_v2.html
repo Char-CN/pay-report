@@ -10,13 +10,16 @@
 				</select>
 			</div>
 			<div class="layui-inline" id="date_div">
+				<input type="text" class="layui-input" readonly="readonly" style="width:185px;" id="date">
+			</div>
+			<div class="layui-inline">
+				<input type="checkbox" lay-filter="7day" title="近7天">
+				<input type="checkbox" lay-filter="15day" title="近15天">
+				<input type="checkbox" lay-filter="30day" title="近30天">
 			</div>
 			<div class="layui-inline">
 				<button class="layui-btn" lay-submit lay-filter="search">查询</button>
 			</div>
-<!-- 			<div class="layui-inline"> -->
-<!-- 				<button class="layui-btn" lay-submit lay-filter="export">导出</button> -->
-<!-- 			</div> -->
 		</div>
 	</form>
 	<div id="charts" style="float:left;margin-top: 20px;"></div>
@@ -28,10 +31,13 @@
 	$(function() {
 		$("#center_child").width($("#center").width() - 20);
 		$("#charts").width($("#center").width() - 20);
-		$("#charts").height($("#center").height() /2 - 60);
+		$("#charts").height($("#center").height() - 60);
 		$("#charts2").width($("#center").width() - 20);
-		$("#charts2").height($("#center").height() /2 - 60);
+		$("#charts2").height($("#center").height() - 60);
 		var today = new XDate().addDays(-1).toString("yyyy-MM-dd");
+		var today_7 = new XDate().addDays(-7).toString("yyyy-MM-dd");
+		var today_15 = new XDate().addDays(-15).toString("yyyy-MM-dd");
+		var today_30 = new XDate().addDays(-30).toString("yyyy-MM-dd");
 		var customFixed = function(num) {
 			if (num >= 10000) {
 				return $DSUtil.toFixed2(num / 10000) + " 万元";
@@ -47,11 +53,52 @@
 				search();
 				return false;
 			});
+			form.on('checkbox', function(data) {
+				if (data.elem.checked) {
+					$(data.elem).siblings("input[type=checkbox]").each(function(i, o){
+						if (data.elem.title != o.title && o.checked) {
+							o.checked = false;
+						}
+					});
+					if (data.elem.title == "近7天") {
+						$("#date").val(today_7 + " - " + today);
+					} else if (data.elem.title == "近15天") {
+						$("#date").val(today_15 + " - " + today);
+					} else if (data.elem.title == "近30天") {
+						$("#date").val(today_30 + " - " + today);
+					}
+					form.render('checkbox');
+				}
+			});
 // 			form.on('submit(export)', function(data) {
 // 				tableToExcel('table', 'data');
 // 				return false;
 // 			});
-			refer_date_div();
+			var laydate = layui.laydate;
+			laydate.render({
+				elem: '#date',
+				max : -1,
+				value : today + " - " + today,
+				range: true,
+				btns : [ 'confirm' ],
+				done: function(value, date, endDate) {
+					$("#center_child>form input[type=checkbox]").each(function(i, o){
+						o.checked = false;
+					});
+					var days = value.split(" - ");
+					var day_begin = days[0];
+					var day_end = days[1];
+					if (day_begin == today_7 && day_end == today) {
+						$("#center_child>form input[type=checkbox][lay-filter='7day']")[0].checked = true;
+					} else if (day_begin == today_15 && day_end == today) {
+						$("#center_child>form input[type=checkbox][lay-filter='15day']")[0].checked = true;
+					} else if (day_begin == today_30 && day_end == today) {
+						$("#center_child>form input[type=checkbox][lay-filter='30day']")[0].checked = true;
+					}
+					form.render('checkbox');
+				}
+			});
+// 			$("#date").val(today + " - " + today);
 			/* 加载组织架构 */
 			$.ajax({
 				url: "http://ds.idc.xiwanglife.com/dataservice/getconfig.do?id=227", 
@@ -116,18 +163,6 @@
 			/* 查询默认数据 */
 			// search();
 		};
-		var refer_date_div = function() {
-			var laydate = layui.laydate;
-			$("#date_div").empty();
-			$("#date_div").append('<input type="text" class="layui-input" style="width:180px;" id="date">');
-			laydate.render({
-				elem: '#date',
-				max : -1,
-				range: true,
-				btns : [ 'confirm' ]
-			});
-			$("#date").val(today + " - " + today);
-		};
 		var _req_data = null;
 		var _resp_data = null;
 		var search = function() {
@@ -140,6 +175,13 @@
 				});
 				return false;
 			}
+			var checks = $('#organize_tree').tree('getChecked', ["checked"]);
+			if (checks.length == 0) {
+				layer.open({
+				  title: '提示'
+				  ,content: '请选择至少一个组织架构.'
+				});
+			}
 
 			var shade_index = layer.load(1, {
 				shade: [0.3,'#fff'] //0.1透明度的白色背景
@@ -149,9 +191,11 @@
 			var rstMap = {};
 			var rstKeys = [];
 
-			var checks = $('#organize_tree').tree('getChecked', ["checked"]);
 			var organizes = "";
 			for ( var i in checks) {
+				if ("恒大地产集团" == checks[i].text) {
+					continue;
+				}
 				organizes += checks[i].text + ",";
 			}
 			if (organizes != "") {
@@ -305,7 +349,7 @@
 							show : false
 						},
 						axisLabel: {
-						    formatter: '{value} 比'
+						    formatter: '{value} 笔'
 						}
 			        } ],
 					series : [ {
@@ -444,6 +488,7 @@
 				$.post(req_url, req_data, req_handler);
 			}
 		};
+		// 回车事件
 		document.onkeydown = function(e) {
 		    var theEvent = e || window.event;
 		    var code = theEvent.keyCode || theEvent.which || theEvent.charCode;
