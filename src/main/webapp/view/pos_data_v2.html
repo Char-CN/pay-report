@@ -158,6 +158,11 @@
 					$("#organize_tree_open").click(function() {
 						$('#organize_tree').tree('expandAll');
 					});
+					// 全选
+					var roots = $('#organize_tree').tree('getRoots');
+					for (var i in roots) {
+						$('#organize_tree').tree('check', roots[i].target);
+					}
 				}
 			});
 			/* 查询默认数据 */
