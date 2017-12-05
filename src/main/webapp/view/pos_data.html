@@ -29,7 +29,7 @@
 
 <script>
 	$(function() {
-		var today = new XDate().addDays(-1).toString("yyyy-MM-dd");
+		var today = new XDate().addDays(0).toString("yyyy-MM-dd");
 		var btn_type = "by_range";
 		/* 初始化方法 */
 		var init = function() {
@@ -64,7 +64,7 @@
 			if (btn_type == "by_range") {
 				laydate.render({
 					elem: '#date',
-					max : -1,
+					max : 0,
 					range: true,
 					btns : [ 'confirm' ]
 				});
@@ -73,7 +73,7 @@
 			} else {
 				laydate.render({
 					elem : '#date',
-					max : -1,
+					max : 0,
 					min : '2017-06-12',
 					istime : true,
 					format : 'yyyy-MM-dd',

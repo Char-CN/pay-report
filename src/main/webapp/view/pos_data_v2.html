@@ -78,6 +78,7 @@
 			laydate.render({
 				elem: '#date',
 				max : 0,
+				min : '2017-06-12',
 				value : today + " - " + today,
 				range: true,
 				btns : [ 'confirm' ],
@@ -105,7 +106,7 @@
 				async: false,
 				success: function(data) {
 					var provinces = data.details.province.values;
-					var citys = data.details.city.values;
+					//var citys = data.details.city.values;
 					var organizes = data.details.organize.values;
 					var province_arr = [];
 					for (var i in provinces) {
@@ -159,10 +160,7 @@
 						$('#organize_tree').tree('expandAll');
 					});
 					// 全选
-					var roots = $('#organize_tree').tree('getRoots');
-					for (var i in roots) {
-						$('#organize_tree').tree('check', roots[i].target);
-					}
+					$('#organize_tree').tree('check', $('#organize_tree').tree('getRoots')[0].target);
 				}
 			});
 			/* 查询默认数据 */
@@ -198,6 +196,7 @@
 
 			var organizes = "";
 			for ( var i in checks) {
+				// 过滤恒大地产集团
 				if ("恒大地产集团" == checks[i].text) {
 					continue;
 				}

@@ -35,6 +35,7 @@
 			<ul class="layui-nav layui-layout-left">
 				<li class="layui-nav-item"><a href="javascript:void(0);" id="pos_data">彬德POS刷卡报表-v1</a></li>
 				<li class="layui-nav-item"><a href="javascript:void(0);" id="pos_data_v2">彬德POS刷卡报表-v2</a></li>
+				<li class="layui-nav-item"><a href="javascript:void(0);" id="pos_data_v3">彬德&拉卡拉报表-v3</a></li>
 			</ul>
 			<!-- 头部区域（可配合layui已有的水平导航） -->
 			<ul class="layui-nav layui-layout-right">
@@ -84,8 +85,12 @@
 				$("#organize_div").empty();
 				$("#center").load("view/pos_data_v2.html");
 			});
-			$("#pos_data_v2").click();
-			$("#pos_data_v2").addClass("layui-this");
+			$("#pos_data_v3").click(function() {
+				$("#organize_div").empty();
+				$("#center").load("view/pos_data_v3.html");
+			});
+			$("#pos_data_v3").click();
+			$("#pos_data_v3").addClass("layui-this");
 		});
 	</script>
 </body>
