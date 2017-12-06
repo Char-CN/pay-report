@@ -101,6 +101,16 @@
 				}
 			});
 // 			$("#date").val(today + " - " + today);
+			/* 加载提示信息 */
+			$.ajax({
+				url: "http://ds.idc.xiwanglife.com/dataservice/getconfig.do?id=282", 
+				async: false,
+				success: function(data) {
+					if (data.details.message.values.length > 0) {
+						layer.alert(data.details.message.values[0].description);
+					}
+				}
+			});
 			/* 加载组织架构 */
 			$.ajax({
 				url: "http://ds.idc.xiwanglife.com/dataservice/getconfig.do?id=256", 
@@ -166,6 +176,16 @@
 					$('#organize_tree').tree('expand', $('#organize_tree').tree('getRoots')[0].target);
 				}
 			});
+			// 回车事件
+			document.onkeydown = function(e) {
+			    var theEvent = e || window.event;
+			    var code = theEvent.keyCode || theEvent.which || theEvent.charCode;
+			    if (code == 13) {
+			        search();
+			        return false;
+			    }
+			    return true;
+			};
 			/* 查询默认数据 */
 			// search();
 		};
@@ -262,6 +282,7 @@
 //					alert(rstKeys);
 				// x坐标轴的设置,
 				axisLabel = {interval: 'auto', rotate:0, margin:8};
+// 				alert(JSON.stringify(rstMap['time_key']));
 				if (rstMap['time_key'].length > 7 && rstMap['time_key'].length <= 30) {
 					axisLabel = {interval: 0, rotate:45, margin:8}
 				}
@@ -805,16 +826,6 @@
 				_req_data = req_data;
 				$.post(req_url, req_data, req_handler);
 			}
-		};
-		// 回车事件
-		document.onkeydown = function(e) {
-		    var theEvent = e || window.event;
-		    var code = theEvent.keyCode || theEvent.which || theEvent.charCode;
-		    if (code == 13) {
-		        search();
-		        return false;
-		    }
-		    return true;
 		};
 		init();
 	});
